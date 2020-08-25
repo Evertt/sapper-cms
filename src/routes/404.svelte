@@ -1,5 +1,5 @@
 <script>
-	import ErrorPage from "./_error.svelte";
+  import ErrorPage from "./_error.svelte"
 </script>
 
 <!-- https://firebase.google.com/docs/hosting/full-config#404 -->

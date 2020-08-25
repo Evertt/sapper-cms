@@ -1,11 +1,11 @@
 <script>
-	import ExampleComponent from "../components/ExampleComponent.svelte";
+  import ExampleComponent from "../components/ExampleComponent.svelte"
 </script>
 
 <style>
-	.centerer {
-		@apply flex-1 flex flex-col items-center justify-center;
-	}
+  .centerer {
+    @apply flex-1 flex flex-col items-center justify-center;
+  }
 </style>
 
 <div class:centerer={true}> <!-- Here's how you could extract conditional class groups with @apply -->
