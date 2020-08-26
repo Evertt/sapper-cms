@@ -19,7 +19,11 @@
 
 <style>
   .centerer {
-    @apply flex-1 flex flex-col items-center justify-center;
+    @apply flex-1 flex flex-col items-center justify-center mx-auto w-full bg-gray-100 md:max-w-xl;
+  }
+
+  div {
+    @apply hover:bg-red-200;
   }
 </style>
 

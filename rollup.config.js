@@ -34,8 +34,6 @@ const onwarn = (warning, _onwarn) => (warning.code === "CIRCULAR_DEPENDENCY" && 
 const firebaseCredentials = process.env.FIREBASE_ADMIN_AUTH
   || fs.readFileSync(`${__dirname}/.firebase-credentials.json`)
 
-console.log({ env: process.env })
-
 export default {
   client: {
     input: config.client.input().replace(/\.js$/, ".ts"),

@@ -20,3 +20,5 @@ export const plugins = [
 export const future = {
   removeDeprecatedGapUtilities: true,
 }
+
+export const experimental = "all"
