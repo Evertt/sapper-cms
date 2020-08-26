@@ -5,20 +5,15 @@
   View the full documentation at https://tailwindcss.com.
 */
 
-import tailwindui from "@tailwindcss/ui"
-
-export const purge = false // Purging is taken care of in postcss.config.js
-
-export const theme = {
-  extend: {},
+module.exports = {
+  purge: false, // Purging is taken care of in postcss.config.js
+  theme: {
+    extend: {},
+  },
+  variants: {},
+  plugins: [],
+  future: {
+    removeDeprecatedGapUtilities: true,
+  },
+  experimental: "all",
 }
-export const variants = {}
-export const plugins = [
-  tailwindui, // Can drastically slow down build time, disable if a problem
-]
-
-export const future = {
-  removeDeprecatedGapUtilities: true,
-}
-
-export const experimental = "all"
