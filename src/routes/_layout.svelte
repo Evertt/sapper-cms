@@ -2,6 +2,14 @@
   export const preload = () => {}
 </script>
 
+<svelte:head>
+  <title>
+    {path ? path.charAt(0).toUpperCase() + path.slice(1) : "Index"}
+  </title>
+</svelte:head>
+
+<slot />
+
 <script>
   import { stores } from "@sapper/app"
 
@@ -21,11 +29,3 @@
 <style global>
   @import "../global.pcss";
 </style>
-
-<svelte:head>
-  <title>
-    {path ? path.charAt(0).toUpperCase() + path.slice(1) : "Index"}
-  </title>
-</svelte:head>
-
-<slot />
