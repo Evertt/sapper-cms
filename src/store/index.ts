@@ -10,7 +10,7 @@ interface Model {
 
 export type { Model }
 
-type Store<T extends Model> = Readable<T[]> & Firebase.firestore.Query & {
+export type Store<T extends Model> = Readable<T[]> & Firebase.firestore.Query & {
   add: (doc: T) => void
 }
 

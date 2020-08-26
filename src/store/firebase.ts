@@ -17,17 +17,10 @@ if (process.browser) {
 } else {
   // eslint-disable-next-line global-require
   fb = require("firebase-admin")
-  firebaseConfig = process.env.FIREBASE_ADMIN_AUTH
 
-  if (typeof firebaseConfig === "string") {
-    firebaseConfig = JSON.parse(firebaseConfig)
-  }
-
-  if (firebaseConfig != null) {
-    firebaseConfig = {
-      credential: fb.credential.cert(firebaseConfig),
-      databaseURL: "https://mytryout-246d2.firebaseio.com",
-    }
+  firebaseConfig = {
+    credential: fb.credential.applicationDefault(),
+    databaseURL: "https://mytryout-246d2.firebaseio.com",
   }
 }
 
