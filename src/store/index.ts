@@ -101,9 +101,6 @@ type PreloaderMaker = (store: Store<any>) => Preloader
 
 export const preloader: PreloaderMaker = (store) => ({ params }) => new Promise(
   (resolve) => store.subscribe(
-    (data) => {
-      console.log({ data })
-      return data.length && resolve(params)
-    },
+    (data) => data.length && resolve(params),
   ),
 )
