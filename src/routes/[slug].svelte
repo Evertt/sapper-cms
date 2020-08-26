@@ -15,7 +15,7 @@
   
   export function preload({ params }: SlugParams) {
     const { slug } = params
-    posts = posts.where("slug", "==", slug) as Store<Post>
+    posts = posts.where("slug", "==", slug)
 
     return new Promise(
       (resolve) => posts.subscribe(

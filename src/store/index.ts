@@ -8,11 +8,20 @@ interface Model {
   delete: () => void
 }
 
-export type { Model }
+type ProxyWrapper<T, U> = U & {
+  [K in keyof T]: T[K] extends (...a: any) => T
+    ? (...a: Parameters<T[K]>) => ProxyWrapper<T, U>
+    : T[K]
+}
 
-export type Store<T extends Model> = Readable<T[]> & Firebase.firestore.Query & {
+interface CollectionMethods<T extends Model> {
   add: (doc: T) => void
 }
+
+type Store<T extends Model>
+  = ProxyWrapper<Firebase.firestore.Query, Readable<T[]> & CollectionMethods<T>>
+
+export type { Model, Store }
 
 export function collection<T extends Model>(
   reference: string|Firebase.firestore.CollectionReference,
