@@ -1,23 +1,10 @@
-<script context="module">
-  import { collection, preloader } from "../store"
-  import { Post } from  "../store/Post"
-  
-  const posts = collection(Post)
-  export const preload = preloader(posts)
-</script>
-
 <div class:centerer={true}> <!-- Here's how you could extract conditional class groups with @apply -->
   <ExampleComponent
     title="🌐 Opinionated Sapper project base"
     paragraph="This is an example route and component to make sure everything's working." />
 
   <a class="button" href="/graphql">Check out the GraphQL playground!</a>
-
-  <ul>
-    {#each $posts as post}
-      <li><a href="/{post.slug}">{post.title}</a><br/></li>
-    {/each}
-  </ul>
+  <a href="/blog">Check out the blog</a>
 </div>
 
 <script>

@@ -1,6 +1,6 @@
 <script context="module">
-  import { model } from "../store"
-  import { Post } from  "../store/Post"
+  import { model } from "../../store"
+  import { Post } from  "../../store/Post"
   
   export function preload({ params }: any) {
     const slug: string = params.slug
@@ -23,7 +23,7 @@
 {/if}
 
 <script>
-  import type { Model } from "../store"
+  import type { Model } from "../../store"
   
   export let post: Model<Post>
 </script>
