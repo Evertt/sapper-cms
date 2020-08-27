@@ -22,7 +22,7 @@ export function collection<T extends ModelStatic, U>(
   Model: ModelType<T, U>,
   q?: Firebase.firestore.Query,
 ): Collection<U> {
-  const ref: Firebase.firestore.CollectionReference = db.collection(Model.collection)
+  const ref = db.collection(Model.collection)
   const query = q ?? ref
 
   /**
