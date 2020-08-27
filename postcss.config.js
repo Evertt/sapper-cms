@@ -23,7 +23,7 @@ module.exports = {
 
     !dev && postcssPurgecss({
       content: ["./src/**/*.svelte", "./src/**/*.html"],
-      defaultExtractor: (content) => [...content.matchAll(/(?:class:)*([\w\d-/:%.]+)/gm)].map(([_match, group, ..._rest]) => group),
+      defaultExtractor: content => [...content.matchAll(/(?:class:)*([\w\d-/:%.]+)/gm)].map(([_match, group, ..._rest]) => group),
     }),
 
     !dev && cssnano({

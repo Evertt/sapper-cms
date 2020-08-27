@@ -1,39 +1,29 @@
 <script context="module">
-  import { collection } from "../store"
-  import type { Model, Store } from "../store"
-
-  type Post = Model & {
-    slug: string,
-    title: string,
-    html: string,
-    created?: Date,
-    updated?: Date,
-  }
-
-  let posts: Store<Post> = collection<Post>("posts")
-  type SlugParams = { params: { slug: string } }
+  import { model } from "../store"
+  import { Post } from  "../store/Post"
   
-  export function preload({ params }: SlugParams) {
-    const { slug } = params
-    posts = posts.where("slug", "==", slug)
+  export function preload({ params }: any) {
+    const slug: string = params.slug
+    const post = model(Post).where("slug", "==", slug)
 
     return new Promise(
-      (resolve) => posts.subscribe(
-        ($posts) => $posts.length && resolve({ params }),
+      resolve => post.subscribe(
+        $post => $post != null && resolve({ post }),
       ),
     )
   }
 </script>
 
-{#if $posts && $posts.length}
-<div class="container mx-auto">
-  <h1>{$posts[0].title}</h1>
+{#if $post}
+  <div class="container mx-auto">
+    <h1>{$post.title}</h1>
 
-  {@html $posts[0].html}
-</div>
+    {@html $post.html}
+  </div>
 {/if}
 
 <script>
-  export let params: { slug: string }
-  preload({ params })
+  import type { Model } from "../store"
+  
+  export let post: Model<Post>
 </script>

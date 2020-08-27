@@ -1,16 +1,8 @@
 <script context="module">
   import { collection, preloader } from "../store"
-  import type { Model } from "../store"
-
-  type Post = Model & {
-    slug: string,
-    title: string,
-    html: string,
-    created?: Date,
-    updated?: Date,
-  }
-
-  const posts = collection<Post>("posts")
+  import { Post } from  "../store/Post"
+  
+  const posts = collection(Post)
   export const preload = preloader(posts)
 </script>
 

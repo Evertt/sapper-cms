@@ -16,7 +16,7 @@ const dev = mode === "development"
 const sourcemap = dev ? "inline" : false
 const legacy = !!process.env.SAPPER_LEGACY_BUILD
 
-const warningIsIgnored = (warning) => warning.message.includes(
+const warningIsIgnored = warning => warning.message.includes(
   "Use of eval is strongly discouraged, as it poses security risks and may cause issues with minification",
 ) || warning.message.includes("Circular dependency: node_modules")
 

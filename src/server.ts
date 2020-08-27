@@ -30,7 +30,7 @@ const createSapperAndApolloServer = async (graphqlPath = "/graphql"): Promise<Ex
 }
 
 if (main) {
-  createSapperAndApolloServer("/graphql").then((app) => {
+  createSapperAndApolloServer("/graphql").then(app => {
 		app.listen(PORT, (err?: any): void => { // eslint-disable-line
       if (err) console.log("error", err)
     })
