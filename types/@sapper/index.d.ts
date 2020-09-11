@@ -50,6 +50,12 @@ declare namespace NodeJS {
   }
 }
 
-interface Window {
-  firebase: any
+declare namespace Browser {
+  import type Firebase from "firebase"
+  import type FirebaseUI from "firebaseui"
+
+  interface Window {
+    firebase: typeof Firebase
+    firebaseui: typeof FirebaseUI
+  }
 }

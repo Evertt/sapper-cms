@@ -1,10 +1,12 @@
-import type Firebase from "firebase-admin"
+import type FBClient from "firebase"
+import type FBAdmin from "firebase-admin"
 
-let fb
-let firebaseConfig
+let firebase: typeof FBClient | typeof FBAdmin
+let firebaseConfig: any
 
 if (process.browser) {
-  fb = window.firebase
+  firebase = window.firebase
+
   firebaseConfig = {
     apiKey: "AIzaSyA1KyA-IPdV18EbhjVwtCs_DiACWI_l3po",
     authDomain: "mytryout-246d2.firebaseapp.com",
@@ -15,16 +17,18 @@ if (process.browser) {
     appId: "1:283873800239:web:aee2367ae33287cf07d6da",
   }
 } else {
-  // eslint-disable-next-line global-require
-  fb = require("firebase-admin")
+  // eslint-disable-next-line
+  firebase = require("firebase-admin") as typeof FBAdmin
 
   firebaseConfig = {
-    credential: fb.credential.applicationDefault(),
+    credential: firebase.credential.applicationDefault(),
     databaseURL: "https://mytryout-246d2.firebaseio.com",
   }
 }
 
-const app: Firebase.app.App = fb.initializeApp(firebaseConfig)
+const app = firebase.initializeApp(firebaseConfig)
+export const fbAdmin = app as FBAdmin.app.App
+export const fbClient = app as FBClient.app.App
 
 export const db = app.firestore()
 if ((db as any).enablePersistence) (db as any).enablePersistence()

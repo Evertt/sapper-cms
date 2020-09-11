@@ -47,11 +47,16 @@
 		"deploy:export": "run-s export firebase:deploy:hosting"
 	},
 	"dependencies": {
+		"@types/js-cookie": "^2.2.6",
 		"compression": "^1.7.4",
+		"cookie-parser": "^1.4.5",
 		"express": "^4.17.1",
+		"firebase": "^7.19.1",
 		"firebase-admin": "^9.1.0",
 		"firebase-functions": "^3.10.0",
 		"firebase-tools": "^8.7.0",
+		"firebaseui": "^4.6.1",
+		"js-cookie": "^2.2.1",
 		"node-fetch": "^2.6.0",
 		"sirv": "^1.0.6"
 	},
@@ -69,6 +74,7 @@
 		"@rollup/plugin-replace": "^2.3.3",
 		"@rollup/plugin-typescript": "^5.0.2",
 		"@types/compression": "^1.7.0",
+		"@types/cookie-parser": "^1.4.2",
 		"@types/express": "^4.17.7",
 		"@types/node-fetch": "^2.5.7",
 		"@typescript-eslint/eslint-plugin": "^3.9.1",

@@ -2,6 +2,11 @@ import * as sapper from "@sapper/server" // eslint-disable-line import/no-unreso
 import compression from "compression"
 import express, { Express } from "express"
 import sirv from "sirv"
+import { get } from "svelte/store"
+import bodyParser from "body-parser"
+import cookieParser from "cookie-parser"
+import user from "./store/User"
+import { fbAdmin } from "./store/firebase"
 import { createApolloServer } from "./graphql"
 
 const PORT = process.env.PORT // eslint-disable-line prefer-destructuring
@@ -23,7 +28,27 @@ const createSapperAndApolloServer = async (graphqlPath = "/graphql"): Promise<Ex
 
   app.use(
     compression({ threshold: 0 }),
-    sapper.middleware(),
+    cookieParser(),
+    bodyParser.json(),
+    async (req, res, next) => {
+      try {
+        const { token } = req.cookies
+        const decodedClaims = await fbAdmin.auth().verifyIdToken(token, true)
+        user.set({
+          name: decodedClaims.name || null,
+          photo: decodedClaims.picture || null,
+          email: decodedClaims.email || null,
+          emailVerified: decodedClaims.email_verified || null,
+        })
+      } catch {} // eslint-disable-line no-empty
+
+      next()
+    },
+    sapper.middleware({
+      session: () => ({
+        user: get(user),
+      }),
+    }),
   )
 
   return app

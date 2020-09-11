@@ -32,7 +32,8 @@ export function model<T extends ModelStatic, U>(
    */
   const store = readable((null as ExtendedModel<U>|null), set => {
     const unsubscribe = query.limit(1).onSnapshot(
-      snapshot => set(snapshot.docs.map(
+      // eslint-disable-next-line max-len
+      (snapshot: Firebase.firestore.QuerySnapshot<Firebase.firestore.DocumentData>) => set(snapshot.docs.map(
         doc => {
           const update = throttle((target: ExtendedModel<U>) => {
             const data: any = {
