@@ -33,7 +33,6 @@ export const createSapperServer = async (): Promise<Express> => {
       resave: false,
       cookie: {
         secure: !dev,
-        sameSite: "lax",
         maxAge: 60 * 60 * 24 * 365,
       },
     }),
