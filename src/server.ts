@@ -30,9 +30,12 @@ export const createSapperServer = async (): Promise<Express> => {
       secret: "I should probably have a secret that's not saved in the repo...",
       saveUninitialized: false,
       name: "__session",
+      rolling: true,
       resave: false,
+      proxy: true,
       cookie: {
         secure: !dev,
+        sameSite: "lax",
         maxAge: 60 * 60 * 24 * 365,
       },
     }),
