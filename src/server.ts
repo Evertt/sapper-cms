@@ -36,7 +36,7 @@ export const createSapperServer = async (): Promise<Express> => {
       cookie: {
         secure: !dev,
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 365,
+        maxAge: 60 * 60 * 24 * 30 * 6,
       },
     }),
     compression({ threshold: 0 }),
@@ -48,7 +48,10 @@ export const createSapperServer = async (): Promise<Express> => {
         // eslint-disable-next-line no-underscore-dangle
         const sessionCookie = req.session!.firebaseSessionCookie
         if (!sessionCookie) return next()
-        const decodedClaims = await fbAdmin.auth().verifySessionCookie(sessionCookie, true)
+
+        const decodedClaims = await fbAdmin.auth()
+          .verifySessionCookie(sessionCookie, true)
+
         req.session!.public = {
           ...req.session!.public,
           user: {
