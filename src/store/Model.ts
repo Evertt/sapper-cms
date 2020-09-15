@@ -2,6 +2,7 @@
 import type Firebase from "firebase-admin"
 import { readable, Readable } from "svelte/store"
 import { db } from "./firebase"
+import { difference } from "../utils"
 
 type Query = Firebase.firestore.Query
 
@@ -18,7 +19,11 @@ export type InitParams<T> = {
   [K in keyof ExcludeFunctionKeys<T>]: T[K]
 }
 
-interface Constructable<T> {
+interface HasId {
+  id?: string
+}
+
+interface Constructable<T extends HasId> {
   new(params: InitParams<T>): T
   prototype: T
 }
@@ -30,9 +35,9 @@ type ProxyWrapper<T, U> = {
 } & U
 
 export type ExtendedModel<U> = U & {
-  id?: string
-  save(): void
-  delete(): void
+  save(): Promise<void>
+  delete(): Promise<void>
+  updateOrCreate(): Promise<void>
 }
 
 type ModelStatic = {
@@ -43,6 +48,7 @@ export type ColQueryWrapper<ModelObject> = ProxyWrapper<Query, ColQueryMethods<M
 
 type ExtendedModelStatic<ModelObject> = ModelStatic & {
   query(): ColQueryWrapper<ModelObject>
+  find(id: string): Readable<ExtendedModel<ModelObject>|null>
 }
 
 type ColQueryMethods<ModelObject> = {
@@ -54,7 +60,7 @@ type DocQueryMethods<ModelObject> = {
   fetch(): Promise<ExtendedModel<ModelObject>|null>
 } & Readable<ExtendedModel<ModelObject>|null>
 
-export type ModelType<ModelObject> = ExtendedModelStatic<ModelObject> & Constructable<ExtendedModel<ModelObject>>
+export type ModelType<ModelObject extends HasId> = ExtendedModelStatic<ModelObject> & Constructable<ExtendedModel<ModelObject>>
 
 type DocQueryWrapper<ModelObject> = ProxyWrapper<Query, DocQueryMethods<ModelObject>>
 
@@ -154,41 +160,61 @@ function colQuery<ModelObject>(
   return makeProxy(myCustomMethods, colQuery, query, ModelClass) as ColQueryWrapper<ModelObject>
 }
 
-export default function Model<ModelObject>(
+export default function Model<ModelObject extends HasId>(
   ModelClass: ModelStatic & Constructable<ModelObject>,
 ): ModelType<ModelObject> {
   // I don't know how to type-cast. I'm just doing whatever it takes to make this compile...
-  const derivedClass = class extends (ModelClass as unknown as ModelStatic & Constructable<any>) {
-    public id?: string
-
+  const DerivedClass = class extends (ModelClass as unknown as ModelStatic & Constructable<any>) {
     static query(): ColQueryWrapper<ModelObject> {
-      return colQuery(derivedClass as ModelType<ModelObject>)
+      return colQuery(DerivedClass as ModelType<ModelObject>)
     }
 
-    constructor(params: any) {
-      super(params)
-      this.id = params.id
+    static find(id: string): Readable<ExtendedModel<ModelObject>|null> {
+      return readable(undefined as (undefined|null|ExtendedModel<ModelObject>), set => {
+        db.collection(ModelClass.collection).doc(id).onSnapshot((doc: any) => {
+          set(doc.exists ? new DerivedClass({ id: doc.id, ...doc.data() } as any) : null)
+        })
+      }) as Readable<ExtendedModel<ModelObject>|null>
     }
 
-    save(): void {
+    async save(updateOrReplace: "update"|"replace" = "replace"): Promise<void> {
       const data: any = { ...this }
       delete data.id
 
       if (this.id) {
-        db.collection(ModelClass.collection).doc(this.id)
-          .set({ ...data, updated: new Date() })
+        const ref = db.collection(ModelClass.collection).doc(this.id)
+        const doc = await ref.get()
+
+        if (doc.exists && updateOrReplace === "update") {
+          const diff = difference(data, doc.data())
+          Object.keys(diff).forEach(key => {
+            if (diff[key] === undefined) delete diff[key]
+          })
+          if (Object.keys(diff).length) {
+            data.updatedAt = new Date()
+            await ref.update(data)
+          }
+          Object.assign(this, (await ref.get()).data())
+        } else {
+          data.updatedAt = new Date()
+          await ref.set(data)
+        }
       } else {
         const doc = db.collection(ModelClass.collection).doc()
-        doc.set({ ...data, created: new Date(), updated: null })
+        await doc.set({ ...data, createdAt: new Date(), updated: null })
         this.id = doc.id
       }
     }
 
-    delete(): void {
+    async updateOrCreate(): Promise<void> {
+      await this.save("update")
+    }
+
+    async delete(): Promise<void> {
       if (!this.id) return
-      db.collection(ModelClass.collection).doc(this.id).delete()
+      await db.collection(ModelClass.collection).doc(this.id).delete()
     }
   } as ModelType<ModelObject>
 
-  return derivedClass
+  return DerivedClass
 }

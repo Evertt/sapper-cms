@@ -1,3 +1,10 @@
+import {
+  transform,
+  isEqualWith,
+  isEqual,
+  isObject,
+} from "lodash-es"
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function throttle(fn: Function, ...delays: number[]): Function {
   let t1: NodeJS.Timeout|undefined
@@ -31,4 +38,27 @@ export function throttle(fn: Function, ...delays: number[]): Function {
       }, delays[activeDelay])
     }, delays[activeDelay])
   }
+}
+
+function customizer(baseValue: any, value: any): boolean {
+  if (Array.isArray(baseValue) && Array.isArray(value)) {
+    return isEqual(baseValue.sort(), value.sort())
+  }
+
+  return isEqual(baseValue, value)
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function difference(object: any, base: any): any {
+  // eslint-disable-next-line no-shadow
+  function changes(object: any, base: any) {
+    return transform(object, (result: any, value: any, key: string) => {
+      if (!isEqualWith(value, base[key], customizer)) {
+        // eslint-disable-next-line no-param-reassign
+        result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value
+      }
+    }, {})
+  }
+
+  return changes(object, base)
 }

@@ -3,6 +3,7 @@ import Model, { InitParams } from "./Model"
 class Post {
   static collection = "posts"
 
+  public id?: string
   public slug: string
   public title: string
   public html: string

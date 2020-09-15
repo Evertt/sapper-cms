@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>{status}</title>
+</svelte:head>
+
 <section>
   <h1>{error.message}</h1>
   <h2>{status}</h2>

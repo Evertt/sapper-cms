@@ -11,13 +11,13 @@ const createNewFirebaseSession = async (idToken: string): Promise<string> => {
 }
 
 export const put = async (req: ExpressRequest, res: ExpressResponse): Promise<void> => {
-  const oldSession = req.session!.public
   const newSession = req.body
   const newIdToken = newSession.user?.idToken
 
   if (newIdToken == null) {
+    delete req.session!.firebaseIdToken
     delete req.session!.firebaseSessionCookie
-  } else if (newIdToken !== oldSession?.user?.idToken) {
+  } else if (newIdToken !== req.session!.firebaseIdToken) {
     try {
       req.session!.firebaseSessionCookie = await createNewFirebaseSession(newIdToken)
       req.session!.firebaseIdToken = newIdToken

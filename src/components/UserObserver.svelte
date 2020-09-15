@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte"
   import { stores } from "@sapper/app"
+  import User from "../store/User"
   import { fbClient } from "../store/firebase"
 
   const { session } = stores()
@@ -13,14 +14,18 @@
       }
 
       const idToken = await fbUser.getIdToken()
-
-      $session.user = {
+      const user = new User({
+        id: fbUser.uid,
+        token: idToken,
         name: fbUser.displayName,
-        photo: fbUser.photoURL,
+        image: fbUser.photoURL,
         email: fbUser.email,
         emailVerified: fbUser.emailVerified,
-        idToken: idToken,
-      }
+        username: (fbUser.displayName?.match(/^\w+/) || [])[0]
+      })
+
+      await user.updateOrCreate()
+      $session.user = user
     })
 
   onMount(watchFirebaseAuth)

@@ -43,7 +43,7 @@ export const createSapperServer = async (): Promise<Express> => {
     cookieParser(),
     csrf(),
     bodyParser.json(),
-    async (req, res, next) => {
+    async (req, {}, next) => {
       try {
         // eslint-disable-next-line no-underscore-dangle
         const sessionCookie = req.session!.firebaseSessionCookie
@@ -52,18 +52,21 @@ export const createSapperServer = async (): Promise<Express> => {
         const decodedClaims = await fbAdmin.auth()
           .verifySessionCookie(sessionCookie, true)
 
+        req.session!.user_id = decodedClaims.uid
         req.session!.public = {
           ...req.session!.public,
           user: {
             name: decodedClaims.name,
-            photo: decodedClaims.picture,
+            image: decodedClaims.picture,
             email: decodedClaims.email,
             emailVerified: decodedClaims.email_verified,
-            idToken: req.session!.firebaseIdToken,
+            ...req.session!.public?.user,
+            token: req.session!.firebaseIdToken,
           },
         }
       } catch {
         delete req.session!.firebaseSessionCookie
+        delete req.session!.user_id
       }
 
       return next()
