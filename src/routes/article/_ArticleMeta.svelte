@@ -6,7 +6,8 @@
   export let article: Article
   export let user: User|null
 
-  $: canModify = user && article.author.username === user.username
+  $: canModify = user && article.author?.username === user.username
+  $: author = article.author!
 
   async function remove() {
     await article.delete()
@@ -15,12 +16,12 @@
 </script>
 
 <div class="article-meta">
-  <a href="/profile/@{article.author.username}">
-    <img src={article.author.image} alt={article.author.username} />
+  <a href="/profile/@{author.username}">
+    <img src={author.image} alt={author.username} />
   </a>
 
   <div class="info">
-    <a href="/profile/@{article.author.username}" class="author"> {article.author.username}</a>
+    <a href="/profile/@{author.username}" class="author"> {author.username}</a>
     <span class="date">
       {new Date(article.createdAt).toDateString()}
     </span>

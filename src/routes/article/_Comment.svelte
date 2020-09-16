@@ -1,15 +1,12 @@
 <script>
+	import type User from "../../store/User"
 	import type Comment from "../../store/Comment"
-	import { createEventDispatcher } from 'svelte';
 
 	export let comment: Comment
-	export let user: any
-
-	const dispatch = createEventDispatcher();
+	export let user: User
 
 	async function remove() {
 		await comment.delete()
-		dispatch("deleted");
 	}
 </script>
 

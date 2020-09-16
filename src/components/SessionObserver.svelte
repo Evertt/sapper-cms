@@ -4,10 +4,26 @@
   import { throttle } from "../utils"
   import User from "../store/User"
 
+  const jsonify = ({ ...obj }, depth = 0): any => {
+    Object.keys(obj).forEach(key => {
+      if (obj[key] === null) return
+      if (typeof obj[key] !== "object") return
+      if (typeof obj[key].toJSON === "function") {
+        obj[key] = obj[key].toJSON()
+      } else if (depth < 8) {
+        obj[key] = jsonify(obj[key], depth + 1)
+      }
+    })
+
+    return obj
+  }
+
   const { session } = stores()
-  let lastSessionValue = { ...$session }
+  let lastSessionValue = jsonify($session)
 
   const saveSession = (newSessionValue: any) => {
+    newSessionValue = jsonify(newSessionValue)
+    
     const newSessionString = JSON.stringify(newSessionValue)
     const lastSessionString = JSON.stringify(lastSessionValue)
 
@@ -32,6 +48,6 @@
       $session.user = new User($session.user)
     }
 
-    saveSessionThrottled({ ...$session })
+    saveSessionThrottled($session)
   }
 </script>

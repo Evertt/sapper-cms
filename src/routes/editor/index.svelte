@@ -7,8 +7,10 @@
 </script>
 
 <script>
-	import Editor from './_Editor.svelte';
-	let article = { title: '', description: '', body: '', tagList: [] };
+	import Editor from "./_Editor.svelte"
+	import Article from "../../store/Article"
+
+	let article = new Article({ title: '', description: '', body: '', tagList: [] });
 </script>
 
 <Editor {article} />

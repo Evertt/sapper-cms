@@ -1,17 +1,13 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
 	import type Article from "../../store/Article"
 
 	export let article: Article
 	export let user: any
 
-	const dispatch = createEventDispatcher();
+	let body = "";
 
-	let body = '';
-
-	async function submit() {
-		const comment = article.addComment({ body, author: user })
-		dispatch('commented', comment)
+	function submit() {
+		article.addComment({ body, author: user })
 		body = ""
 	}
 </script>

@@ -1,4 +1,4 @@
-import Model, { InitParams } from "./Model"
+import Model, { Props } from "./Model"
 
 class Misc {
   static collection = "misc"
@@ -6,7 +6,7 @@ class Misc {
   public id?: string
   public tags: string[] = []
 
-  constructor(params: InitParams<Misc>) {
+  constructor(params: Props<Misc>) {
     Object.assign(this, params)
   }
 }

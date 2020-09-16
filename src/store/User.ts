@@ -1,4 +1,4 @@
-import Model, { InitParams } from "./Model"
+import Model, { Props } from "./Model"
 
 class User {
   static collection = "users"
@@ -15,7 +15,7 @@ class User {
   public createdAt?: Date
   public updatedAt?: Date
 
-  constructor(params: InitParams<User>) {
+  constructor(params: Props<User>) {
     Object.assign(this, params)
   }
 }

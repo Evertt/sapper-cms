@@ -3,6 +3,9 @@
   
   export let article: Article
   export let user: any
+  let author: any
+
+  $: author = article.author || {}
 
   async function toggleFavorite() {
     // optimistic UI
@@ -20,12 +23,12 @@
 
 <div class="article-preview">
   <div class="article-meta">
-    <a href='/profile/@{article.author.username}'>
-      <img src={article.author.image} alt={article.author.username} />
+    <a href='/profile/@{author.username}'>
+      <img src={author.image} alt={author.username} />
     </a>
 
     <div class="info">
-      <a class="author" href='/profile/@{article.author.username}'> {article.author.username}
+      <a class="author" href='/profile/@{author.username}'> {author.username}
       </a>
       <span class="date">
         {new Date(article.createdAt).toDateString()}

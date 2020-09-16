@@ -7,7 +7,8 @@
 	export let tab: string, username: string|false = false
 	export let favorites: any[]|false = false
 	export let tag: string|null = null
-	// export let p: number
+	export let p: number
+	if (p < 0) console.log("weird...")
 
 	const { session, page } = stores()
 

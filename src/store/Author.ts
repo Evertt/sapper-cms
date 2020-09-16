@@ -1,4 +1,4 @@
-import Model, { InitParams } from "./Model"
+import Model, { Props } from "./Model"
 
 class Author {
   static collection = "authors"
@@ -9,7 +9,7 @@ class Author {
   public image: string
   public following: false
 
-  constructor(params: InitParams<Author>) {
+  constructor(params: Props<Author>) {
     this.username = params.username
     this.bio = params.bio
     this.image = params.image

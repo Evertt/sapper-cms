@@ -23,13 +23,12 @@
 	import CommentContainer from './_CommentContainer.svelte';
 	import type { Readable } from "svelte/store";
 
-	export let article: Readable<Article>
+	export let article = undefined as unknown as Readable<Article>
 	const comments = $article.comments
 
-	const { session } = stores();
+	const { session } = stores()
 
-	let commentErrors: any[] // we'll lazy-load these in onMount
-	$: markup = marked($article.body);
+	$: markup = marked($article.body)
 </script>
 
 <svelte:head>
@@ -66,7 +65,7 @@
 
 		<div class="row">
 			{#if $comments}
-				<CommentContainer article={$article} comments={$comments} user={$session.user} errors={commentErrors}/>
+				<CommentContainer article={$article} comments={$comments} user={$session.user} />
 			{/if}
 		</div>
 	</div>

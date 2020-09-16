@@ -1,4 +1,4 @@
-import Model, { InitParams } from "./Model"
+import Model, { Props } from "./Model"
 
 class Post {
   static collection = "posts"
@@ -8,7 +8,7 @@ class Post {
   public title: string
   public html: string
 
-  constructor(params: InitParams<Post>) {
+  constructor(params: Props<Post>) {
     this.slug = params.slug
     this.title = params.title
     this.html = params.html

@@ -17,7 +17,7 @@ export function preloader(modelType: any, name?: string, key?: string): Preloade
       })
     }
 
-    const model = (modelType as ModelType<any>).query()
+    const model = (modelType as ModelType<any, any>).query()
       .where(key, "==", args.params[key]).first()
 
     return new Promise(
