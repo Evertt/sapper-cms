@@ -17,9 +17,9 @@ if (process.browser) {
   }
 }
 
-const app = firebase.initializeApp(firebaseConfig)
-export const fbAdmin = app as FBAdmin.app.App
-export const fbClient = app as FBClient.app.App
+export const fbApp = firebase.initializeApp(firebaseConfig)
+export const fbAdmin = fbApp as FBAdmin.app.App
+export const fbClient = fbApp as FBClient.app.App
 
-export const db = app.firestore()
+export const db = fbApp.firestore()
 if ((db as any).enablePersistence) (db as any).enablePersistence()
