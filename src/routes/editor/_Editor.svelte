@@ -20,6 +20,10 @@
 	async function publish() {
 		inProgress = true;
 
+		if (article.slug === "") {
+			article.setSlug()
+		}
+
 		await article.updateOrCreate()
 		goto(`/article/${article.slug}`);
 

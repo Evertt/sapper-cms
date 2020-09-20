@@ -7,10 +7,20 @@
 </script>
 
 <script>
+	import { stores } from "@sapper/app"
+	import type User from "../../store/User"
 	import Editor from "./_Editor.svelte"
 	import Article from "../../store/Article"
 
-	let article = new Article({ title: '', description: '', body: '', tagList: [] });
+	const { session } = stores()
+
+	$: article = new Article({
+		title: '',
+		description: '',
+		body: '',
+		tagList: [],
+		author: $session.user
+	})
 </script>
 
 <Editor {article} />

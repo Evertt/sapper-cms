@@ -5,9 +5,10 @@
 
   export let article: Article
   export let user: User|null
+  let author: any
 
-  $: canModify = user && article.author?.username === user.username
-  $: author = article.author!
+  $: author = article.author
+  $: canModify = $author && user && $author.username === user.username
 
   function remove() {
     article.delete()
@@ -15,27 +16,29 @@
   }
 </script>
 
-<div class="article-meta">
-  <a href="/profile/@{author.username}">
-    <img src={author.image} alt={author.username} />
-  </a>
+{#await author then _}
+  <div class="article-meta">
+    <a href="/profile/@{$author.username}">
+      <img src={$author.image} alt={$author.username} />
+    </a>
 
-  <div class="info">
-    <a href="/profile/@{author.username}" class="author"> {author.username}</a>
-    <span class="date">
-      {new Date(article.createdAt).toDateString()}
-    </span>
+    <div class="info">
+      <a href="/profile/@{$author.username}" class="author"> {$author.username}</a>
+      <span class="date">
+        {new Date(article.createdAt).toDateString()}
+      </span>
+    </div>
+
+    {#if canModify}
+      <span>
+        <a href="/editor/{article.slug}" class="btn btn-outline-secondary btn-sm">
+          <i class="ion-edit"/> Edit Article
+        </a>
+
+        <button class="btn btn-outline-danger btn-sm" on:click="{remove}">
+          <i class="ion-trash-a"/> Delete Article
+        </button>
+      </span>
+    {/if}
   </div>
-
-  {#if canModify}
-    <span>
-      <a href="/editor/{article.slug}" class="btn btn-outline-secondary btn-sm">
-        <i class="ion-edit"/> Edit Article
-      </a>
-
-      <button class="btn btn-outline-danger btn-sm" on:click="{remove}">
-        <i class="ion-trash-a"/> Delete Article
-      </button>
-    </span>
-  {/if}
-</div>
+{/await}

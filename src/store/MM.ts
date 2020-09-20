@@ -3,6 +3,7 @@ import type Firebase from "firebase-admin"
 import { Observable, firstValueFrom } from "rxjs"
 import { shareReplay } from "rxjs/operators"
 import { db } from "./firebase"
+import { difference } from "../utils"
 
 type Query = Firebase.firestore.Query
 
@@ -128,7 +129,7 @@ function docQuery<P, ModelObject>(
   const myCustomMethods = toPromise((new Observable<ModelObject>(
     subscriber => query.limit(1).onSnapshot(
       (snapshot: any) => {
-        if (snapshot.empty || !snapshot.exists) {
+        if (snapshot.empty === true || snapshot.exists === false) {
           subscriber.error(new Error(`${ModelClass.name} not found.`))
         } else {
           const doc = snapshot.docs ? snapshot.docs[0] : snapshot
@@ -201,6 +202,8 @@ export default class Model {
       if (Object.getPrototypeOf(data[key].constructor).name === "Model") {
         if (data[key].docRef == null) await data[key].save()
         data[key] = data[key].docRef
+      } else if (data[key].constructor?.name === "Observable") {
+        delete data[key]
       }
     }))
 
@@ -210,7 +213,10 @@ export default class Model {
       const doc = await this.docRef.get()
 
       if (doc.exists && updateOrReplace === "update") {
-        const diff = { ...data }
+        const diff = difference(data, doc.data())
+        Object.keys(diff).forEach(key => {
+          if (diff[key] === undefined) delete diff[key]
+        })
         Object.keys(diff).forEach(key => {
           if (diff[key] === undefined) delete diff[key]
         })
@@ -248,6 +254,25 @@ export default class Model {
 }
 
 const metadata = new Map()
+const subs: ((t: any, id: string) => void)[] = []
+
+const addSubscription = (model: Model, fn: (t: any, id: string) => void): void => {
+  if (Object.getOwnPropertyDescriptor(model, "id") === undefined) {
+    /* eslint-disable no-inner-declarations */
+    function get(this: Model) {
+      return metadata.get(this)?.id
+    }
+
+    function set(this: Model, id: string) {
+      metadata.set(this, { id })
+      subs.forEach((cb: (t: any, id: string) => void) => cb(this, id))
+    }
+
+    Object.defineProperty(model, "id", { get, set })
+  }
+
+  subs.push(fn)
+}
 
 export const subcollection = <S extends Model, C extends Constructable<any, S>, T extends Model>(SubModelClass: C) => (target: T, key: string): void => {
   const setNewQuery = (t: any, id: string) => {
@@ -261,17 +286,31 @@ export const subcollection = <S extends Model, C extends Constructable<any, S>, 
     t[key] = newClass.query()
   }
 
-  if (Object.getOwnPropertyDescriptor(target, "id") === undefined) {
-    /* eslint-disable no-inner-declarations */
-    function get(this: S) {
-      return metadata.get(this)?.id
+  addSubscription(target, setNewQuery)
+}
+
+export const belongsTo = <S extends Model, C extends Constructable<any, S>, T extends Model>(SubModelClass: C) => (target: T, key: string): void => {
+  function get(this: S) {
+    const md = metadata.get(this) || {}
+
+    if (!md.relatedStore) {
+      const query = typeof md.relatedId === "string"
+        ? db.collection((SubModelClass as any).collection).doc(md.relatedId)
+        : md.relatedId
+
+      md.relatedStore = docQuery(SubModelClass as any, query as any)
     }
 
-    function set(this: S, id: string) {
-      metadata.set(this, { id })
-      setNewQuery(this, id)
-    }
-
-    Object.defineProperty(target, "id", { get, set })
+    return md.relatedStore
   }
+
+  function set(this: S, newId: any) {
+    metadata.set(this, {
+      ...metadata.get(this),
+      relatedId: newId,
+      relatedStore: null,
+    })
+  }
+
+  Object.defineProperty(target, key, { get, set })
 }

@@ -9,15 +9,17 @@
 		const article = Article.query()
 			.where("slug", "==", params.slug).first()
 
+		await article
+
 		return { article }
 	}
 </script>
 
 <script>
-	import type { Readable } from 'svelte/store';
+	import type { Observable } from 'rxjs';
 	import Editor from './_Editor.svelte';
 
-	export let article: Readable<Article>
+	export let article: Observable<Article>
 </script>
 
 <Editor article={$article} />

@@ -1,23 +1,19 @@
 <script>
+	import type User from "../../../store/User"
 	import { goto } from '@sapper/app';
 	import ArticleList from '../../_components/ArticleList/index.svelte';
 	import * as api from 'api.js';
 
-	export let profile: any
-	export let favorites: any[]
-	export let user: any
+	export let profile: User
+	export let favorites: boolean
+	export let user: User
 
 	$: isUser = user && (profile.username === user.username);
 
 	async function toggleFollowing() {
 		if (!user) return goto('/login');
 
-		// optimistic UI
-		profile.following = !profile.following;
-
-		({ profile, favorites } = await (profile.following
-			? api.post(`profiles/${profile.username}/follow`, null, user && user.token)
-			: api.del(`profiles/${profile.username}/follow`, user && user.token)));
+		// TODO: implement
 	}
 </script>
 
@@ -30,7 +26,7 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-xs-12 col-md-10 offset-md-1">
-					<img src={profile.image} class="user-img" alt={profile.username} />
+					<img src={profile.image || ""} class="user-img" alt={profile.username || ""} />
 					<h4>{profile.username}</h4>
 					<p>{profile.bio}</p>
 
@@ -67,7 +63,7 @@
 					</ul>
 				</div>
 
-				<ArticleList tab='profile' username={profile.username} {favorites} p={1} />
+				<ArticleList tab='profile' username={profile.username || ""} {favorites} p={1} />
 			</div>
 		</div>
 	</div>
