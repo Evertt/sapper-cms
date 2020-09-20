@@ -53,11 +53,13 @@ type ExtendedModelStatic<ModelObject> = ModelStatic & {
 }
 
 type ColQueryMethods<ModelObject> = {
+  loading: boolean
   fetch(): Promise<ExtendedModel<ModelObject>[]>
   first(): DocQueryWrapper<ModelObject>
 } & Readable<ExtendedModel<ModelObject>[]>
 
 type DocQueryMethods<ModelObject> = {
+  loading: boolean
   fetch(): Promise<ExtendedModel<ModelObject>|null>
 } & Readable<ExtendedModel<ModelObject>|null>
 
@@ -123,6 +125,8 @@ function docQuery<P, ModelObject>(
 ): DocQueryWrapper<ModelObject> {
   // First we define our custom method of our Query proxy.
   const myCustomMethods: DocQueryMethods<ModelObject> = {
+    loading: false,
+
     async fetch(): Promise<ExtendedModel<ModelObject>|null> {
       const snapshot = await query.limit(1).get()
       const doc = snapshot.docs[0]
@@ -150,22 +154,37 @@ function colQuery<P, ModelObject>(
 ): ColQueryWrapper<ModelObject> {
   // First we define our custom method of our Query proxy.
   const myCustomMethods: ColQueryMethods<ModelObject> = {
+    loading: false,
+
     async fetch(): Promise<ExtendedModel<ModelObject>[]> {
+      this.loading = true
       const snapshot = await query.get()
-      return Promise.all(snapshot.docs.map(
+      const results = Promise.all(snapshot.docs.map(
         doc => initModel(ModelClass, doc),
       ))
+      this.loading = false
+      return results
     },
 
-    ...(readable(undefined as undefined|ExtendedModel<ModelObject>[], set => {
-      const unsubscribe = query.onSnapshot(
-        async snapshot => set(await Promise.all(snapshot.docs.map(
-          doc => initModel(ModelClass, doc),
-        ))),
-      )
+    subscribe: (readable(
+      undefined as undefined|ExtendedModel<ModelObject>[],
+      function bla(this: typeof myCustomMethods, set) {
+        console.log("loading", this, this.loading)
+        this.loading = true
 
-      return () => unsubscribe()
-    }) as Readable<ExtendedModel<ModelObject>[]>),
+        const unsubscribe = query.onSnapshot(
+          async snapshot => {
+            set(await Promise.all(snapshot.docs.map(
+              doc => initModel(ModelClass, doc),
+            )))
+
+            this.loading = false
+          },
+        )
+
+        return () => unsubscribe()
+      },
+    ) as Readable<ExtendedModel<ModelObject>[]>).subscribe,
 
     first(): DocQueryWrapper<ModelObject> {
       return docQuery(ModelClass, query)
@@ -174,6 +193,99 @@ function colQuery<P, ModelObject>(
 
   // Then we create a proxy
   return makeProxy(myCustomMethods, colQuery, query, ModelClass) as ColQueryWrapper<ModelObject>
+}
+
+// export function belongsTo(target: Object, key: string | symbol): void {
+//   let val = target[key]
+
+//   const getter = () => {
+//     if (val && )
+//   }
+// }
+
+export function MM(collectionPath: string): Constructable<any, any> {
+  return class M {
+    static collection = collectionPath
+
+    public docRef?: Firebase.firestore.DocumentReference
+    public id?: string
+
+    constructor(init: any) {
+      this.docRef = init.docRef
+      this.id = this.docRef?.id || init.id
+    }
+
+    static query<T extends typeof M>(this: T): ColQueryWrapper<InstanceType<T>> {
+      return colQuery(this as any)
+    }
+
+    static find<T extends typeof M>(this: T, id: string): Readable<InstanceType<T>|null> {
+      return readable(undefined as (undefined|null|InstanceType<T>), set => {
+        db.collection(M.collection).doc(id).onSnapshot((doc: any) => {
+          set(doc.exists ? new this({ id: doc.id, ...doc.data() } as any) as InstanceType<T> : null)
+        })
+      }) as Readable<InstanceType<T>|null>
+    }
+
+    async save(updateOrReplace: "update"|"replace" = "replace"): Promise<void> {
+      const data: any = { ...this }
+      delete data.id
+
+      Object.keys(data).forEach(async key => {
+        if (data[key] == null) return
+
+        if (
+          data[key].constructor?.name === "DerivedClass"
+          || Object.getPrototypeOf(data[key].constructor).name === "DerivedClass"
+        ) {
+          if (data[key].docRef == null) await data[key].save()
+          data[key] = data[key].docRef
+        }
+      })
+
+      if (this.id) {
+        this.docRef = this.docRef
+          || db.collection(M.collection).doc(this.id) as Firebase.firestore.DocumentReference
+        const doc = await this.docRef.get()
+
+        if (doc.exists && updateOrReplace === "update") {
+          const diff = difference(data, doc.data())
+          Object.keys(diff).forEach(key => {
+            if (diff[key] === undefined) delete diff[key]
+          })
+          if (Object.keys(diff).length) {
+            data.updatedAt = new Date()
+            await this.docRef.update(data)
+          }
+          Object.assign(this, (await this.docRef.get()).data())
+        } else {
+          data.updatedAt = new Date()
+          await this.docRef.set(data)
+        }
+      } else {
+        const doc = db.collection(M.collection).doc()
+        await doc.set({ ...data, createdAt: new Date(), updated: null })
+        this.id = doc.id
+        this.docRef = doc as Firebase.firestore.DocumentReference
+      }
+    }
+
+    async updateOrCreate(): Promise<void> {
+      await this.save("update")
+    }
+
+    async delete(): Promise<void> {
+      if (!this.id) return
+      await db.collection(M.collection).doc(this.id).delete()
+    }
+
+    toJSON<T extends typeof M>(): Props<InstanceType<T>> {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { docRef, ...rest } = this
+
+      return rest as unknown as Props<InstanceType<T>>
+    }
+  }
 }
 
 export default function Model<P, ModelObject extends HasId>(
@@ -200,6 +312,8 @@ export default function Model<P, ModelObject extends HasId>(
       delete data.id
 
       Object.keys(data).forEach(async key => {
+        if (data[key] == null) return
+
         if (
           data[key].constructor?.name === "DerivedClass"
           || Object.getPrototypeOf(data[key].constructor).name === "DerivedClass"

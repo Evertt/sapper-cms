@@ -1,3 +1,14 @@
+<script context="module">
+	export const preload = async () => {
+		const articles = Article.query()
+			.limit(10).orderBy("createdAt", "desc")
+
+		await articles
+
+		return { articles }
+	}
+</script>
+
 <script>
 	import { stores } from '@sapper/app'
 	import Article from "../../../store/Article"
@@ -12,7 +23,7 @@
 
 	const { session, page } = stores()
 
-	let articles = Article.query().limit(1)
+	export let articles = Article.query().limit(10)
 	const articlesCount = 40
 
 	$: {
@@ -20,8 +31,8 @@
 		const page_size = tab === 'feed' ? 5 : 10
 
 		let query = Article.query().limit(page_size)
-		if (tab === "tag") query = articles.where("tagList", "array-contains", tag)
-		if (tab === 'profile') query = articles.where(favorites ? "favorited" : "author", "==", username)
+		if (tab === "tag") query = query.where("tagList", "array-contains", tag)
+		if (tab === 'profile') query = query.where(favorites ? "favorited" : "author", "==", username)
 		articles = query.orderBy("createdAt", "desc")
 	}
 </script>
@@ -33,7 +44,7 @@
 		</div>
 	{:else}
 		<div>
-			{#each $articles as article (article.slug)}
+			{#each $articles as article (article.id)}
 				<ArticlePreview {article} user={$session.user}/>
 			{/each}
 

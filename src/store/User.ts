@@ -1,6 +1,7 @@
-import Model, { Props } from "./Model"
+import type { Props } from "./Model"
+import Model from "./MM"
 
-class User {
+export default class User extends Model {
   static collection = "users"
 
   public id?: string
@@ -16,8 +17,7 @@ class User {
   public updatedAt?: Date
 
   constructor(params: Props<User>) {
+    super(params)
     Object.assign(this, params)
   }
 }
-
-export default class extends Model(User) {}

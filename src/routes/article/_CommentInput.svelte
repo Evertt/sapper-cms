@@ -1,8 +1,9 @@
 <script>
 	import type Article from "../../store/Article"
+	import type User from "../../store/User"
 
 	export let article: Article
-	export let user: any
+	export let user: User
 
 	let body = "";
 
@@ -18,7 +19,7 @@
 	</div>
 
 	<div class="card-footer">
-		<img src={user.image} class="comment-author-img" alt={user.username} >
+		<img src={user.image || ""} class="comment-author-img" alt={user.username || ""} >
 		<button class="btn btn-sm btn-primary" type="submit">Post Comment</button>
 	</div>
 </form>

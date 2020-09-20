@@ -1,6 +1,7 @@
-import Model, { Props } from "./Model"
+import type { Props } from "./Model"
+import Model from "./MM"
 
-class Author {
+export default class Author extends Model {
   static collection = "authors"
 
   public id?: string
@@ -10,6 +11,7 @@ class Author {
   public following: false
 
   constructor(params: Props<Author>) {
+    super(params)
     this.username = params.username
     this.bio = params.bio
     this.image = params.image
@@ -17,5 +19,3 @@ class Author {
     this.following = params.following
   }
 }
-
-export default class extends Model(Author) {}

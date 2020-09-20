@@ -9,8 +9,8 @@
   $: canModify = user && article.author?.username === user.username
   $: author = article.author!
 
-  async function remove() {
-    await article.delete()
+  function remove() {
+    article.delete()
     goto("/")
   }
 </script>

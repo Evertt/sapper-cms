@@ -1,8 +1,9 @@
 <script>
+  import type User from "../../../store/User"
   import type Article from "../../../store/Article"
   
   export let article: Article
-  export let user: any
+  export let user: User
   let author: any
 
   $: author = article.author || {}
@@ -17,6 +18,7 @@
       article.favorited = true
     }
 
+    console.log(article)
     await article.save()
   }
 </script>

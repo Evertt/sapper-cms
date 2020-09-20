@@ -5,13 +5,12 @@
 		const { slug } = params;
 		const article = Article.query().where("slug", "==", slug).first()
 
-		return new Promise(resolve => {
-			article.subscribe($article => {
-				if ($article === undefined) return
-				if ($article === null) return this.error(404, "Article not found")
-				resolve({ article })
-			})
-		})
+		try {
+			await article
+			return { article }
+		} catch {
+			this.error(404, "Article not found")
+		}
 	}
 </script>
 

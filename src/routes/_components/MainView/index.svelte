@@ -1,3 +1,9 @@
+<script context="module">
+	import { preload } from "../ArticleList/index.svelte"
+
+	export { preload }
+</script>
+
 <script>
 	import { stores } from '@sapper/app'
 	import ArticleList from '../ArticleList/index.svelte'
@@ -5,6 +11,7 @@
 	export let tab = 'all'
 	export let tag: string|null
 	export let p: number
+	export let articles: any
 
 	const { session } = stores()
 
@@ -52,5 +59,5 @@
 		</ul>
 	</div>
 
-	<ArticleList {p} {tab} {tag}/>
+	<ArticleList {articles} {p} {tab} {tag}/>
 </div>

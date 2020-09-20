@@ -1,14 +1,14 @@
-import Model, { Props } from "./Model"
+import type { Props } from "./Model"
+import Model from "./MM"
 
-class Misc {
+export default class Misc extends Model {
   static collection = "misc"
 
   public id?: string
   public tags: string[] = []
 
   constructor(params: Props<Misc>) {
+    super(params)
     Object.assign(this, params)
   }
 }
-
-export default class extends Model(Misc) {}

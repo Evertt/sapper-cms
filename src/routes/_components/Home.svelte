@@ -1,9 +1,16 @@
+<script context="module">
+	import { preload } from "./MainView/index.svelte"
+
+	export { preload }
+</script>
+
 <script>
   import MainView from "./MainView/index.svelte"
   import Tags from "./Tags.svelte"
   import Misc from "../../store/Misc"
 
   export let p = 1
+  export let articles: any
 
   let tab: string
   let tag: string|null
@@ -32,7 +39,7 @@
 
   <div class="container page">
     <div class="row">
-      <MainView {p} {tag} bind:tab />
+      <MainView {articles} {p} {tag} bind:tab />
 
       <div class="col-md-3">
         <div class="sidebar">

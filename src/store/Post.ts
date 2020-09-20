@@ -1,6 +1,7 @@
-import Model, { Props } from "./Model"
+import type { Props } from "./Model"
+import Model from "./MM"
 
-class Post {
+export default class Post extends Model {
   static collection = "posts"
 
   public id?: string
@@ -9,10 +10,9 @@ class Post {
   public html: string
 
   constructor(params: Props<Post>) {
+    super(params)
     this.slug = params.slug
     this.title = params.title
     this.html = params.html
   }
 }
-
-export default class extends Model(Post) {}
