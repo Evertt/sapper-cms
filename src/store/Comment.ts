@@ -1,4 +1,3 @@
-// import type { Readable } from "svelte/store"
 import User from "./User"
 import Model, { belongsTo, ModelQuery } from "./Model"
 
@@ -8,7 +7,7 @@ export default class Comment extends Model {
   public body: string
   public createdAt: Date = new Date()
 
-  @belongsTo(User) public author: ModelQuery<User>
+  @belongsTo(User) public author: ModelQuery<typeof User>
 
   constructor(init: { body: string, author: User, createdAt?: Date }) {
     super(init)

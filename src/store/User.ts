@@ -3,7 +3,6 @@ import Model, { Props } from "./Model"
 export default class User extends Model {
   static collection = "users"
 
-  public id?: string
   public email?: string|null
   public name?: string|null
   public token?: string
@@ -18,6 +17,7 @@ export default class User extends Model {
 
   constructor(params: Partial<Props<User>>) {
     super(params)
+
     Object.assign(this, params)
   }
 }

@@ -34,11 +34,11 @@ export type ModelStore<M extends Model> = Promise<M> & Observable<M>
 export type CollectionStore<M extends Model> = Promise<M[]> & Observable<M[]>
 
 export type CollectionQuery<ModelType extends typeof Model> = ProxyWrapper<Query, CollectionQueryMethods<ModelType>>
-export type ModelQuery<M extends Model> = ProxyWrapper<Query, ModelQueryMethods<M>>
+export type ModelQuery<ModelType extends typeof Model> = ProxyWrapper<Query, ModelQueryMethods<ModelType>>
 
-type ModelQueryMethods<M extends Model> = ModelStore<M>
+type ModelQueryMethods<ModelType extends typeof Model> = ModelStore<InstanceType<ModelType>>
 type CollectionQueryMethods<ModelType extends typeof Model> = CollectionStore<InstanceType<ModelType>> & {
-  first(): ModelQueryMethods<InstanceType<ModelType>>
+  first(): ModelQueryMethods<ModelType>
   add(model: ConstructorParameters<ModelType>[0]): Promise<void>
 }
 
@@ -101,7 +101,7 @@ function initModel<ModelType extends typeof Model>(ModelClass: ModelType, doc: F
 function docQuery<ModelType extends typeof Model>(
   ModelClass: ModelType,
   query: Query = db.collection(ModelClass.collection) as Query,
-): ModelQuery<InstanceType<ModelType>> {
+): ModelQuery<ModelType> {
   if (query.limit === undefined) {
     // eslint-disable-next-line no-param-reassign
     query.limit = () => query
@@ -122,7 +122,7 @@ function docQuery<ModelType extends typeof Model>(
   )).pipe(shareReplay(1)))
 
   // Then we create a proxy
-  return makeProxy(myCustomMethods, docQuery, query, ModelClass) as ModelQuery<InstanceType<ModelType>>
+  return makeProxy(myCustomMethods, docQuery, query, ModelClass) as ModelQuery<ModelType>
 }
 
 function colQuery<ModelType extends typeof Model>(
@@ -166,7 +166,7 @@ export default class Model {
     return colQuery(this as any)
   }
 
-  static find<T extends typeof Model>(this: T, id: string): ModelQuery<InstanceType<T>> {
+  static find<T extends typeof Model>(this: T, id: string): ModelQuery<T> {
     const query = db.collection(this.collection).doc(id)
 
     return docQuery(this as any, query as any)
@@ -255,7 +255,9 @@ const addSubscription = (model: Model, fn: (t: any, id: string) => void): void =
   subs.push(fn)
 }
 
-export const subcollection = <ModelType extends typeof Model, Target extends Model & { [Key in keyof Target]: CollectionQuery<ModelType> }, Key extends string | symbol>(SubModelClass: ModelType) => (target: Target, key: Key): void => {
+export const subcollection = <ModelType extends typeof Model>(SubModelClass: ModelType) => <
+  Target extends Model & Record<Key, CollectionQuery<ModelType>>, Key extends string | symbol
+>(target: Target, key: Key): void => {
   const setNewQuery = (t: any, id: string) => {
     const collectionPath = (target.constructor as any).collection
 
@@ -270,7 +272,9 @@ export const subcollection = <ModelType extends typeof Model, Target extends Mod
   addSubscription(target, setNewQuery)
 }
 
-export const belongsTo = <ModelType extends typeof Model, Target extends Model>(SubModelClass: ModelType) => (target: Target, key: string): void => {
+export const belongsTo = <ModelType extends typeof Model>(SubModelClass: ModelType) => <
+  Target extends Model & Record<Key, ModelQuery<ModelType>>, Key extends string | symbol
+>(target: Target, key: Key): void => {
   function get(this: InstanceType<ModelType>) {
     const md = metadata.get(this) || {}
 

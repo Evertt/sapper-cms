@@ -21,7 +21,7 @@ export default class Article extends Model {
   public favoritesCount: number
   public createdAt: Date
 
-  @belongsTo(User) public author: ModelQuery<User>
+  @belongsTo(User) public author: ModelQuery<typeof User>
   @subcollection(Comment) public comments!: CollectionQuery<typeof Comment>
 
   constructor(init: PropsRequired<Article, "author">) {

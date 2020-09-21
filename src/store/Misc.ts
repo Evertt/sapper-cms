@@ -5,7 +5,7 @@ export default class Misc extends Model {
 
   public tags: string[]
 
-  constructor(init: Partial<{ tags: string[] }>) {
+  constructor(init: { tags?: string[] }) {
     super(init)
     this.tags = init.tags || []
   }
