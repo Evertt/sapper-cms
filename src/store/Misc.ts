@@ -1,14 +1,12 @@
-import type { Props } from "./Model"
-import Model from "./MM"
+import Model from "./Model"
 
 export default class Misc extends Model {
   static collection = "misc"
 
-  public id?: string
-  public tags: string[] = []
+  public tags: string[]
 
-  constructor(params: Props<Misc>) {
-    super(params)
-    Object.assign(this, params)
+  constructor(init: Partial<{ tags: string[] }>) {
+    super(init)
+    this.tags = init.tags || []
   }
 }
