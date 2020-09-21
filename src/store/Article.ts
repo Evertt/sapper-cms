@@ -1,6 +1,11 @@
 import { kebabCase } from "lodash-es"
 import type { Props } from "./Model"
-import Model, { subcollection, ColQueryWrapper, belongsTo } from "./MM"
+import Model, {
+  belongsTo,
+  subcollection,
+  DocQueryWrapper,
+  ColQueryWrapper,
+} from "./MM"
 import User from "./User"
 import Comment from "./Comment"
 
@@ -15,9 +20,9 @@ export default class Article extends Model {
   public description: string
   public favorited: boolean
   public favoritesCount: number
-  public createdAt: Date = new Date()
+  public createdAt: Date
 
-  @belongsTo(User) public author: User
+  @belongsTo(User) public author: DocQueryWrapper<User>
   @subcollection(Comment) public comments!: ColQueryWrapper<Comment>
 
   constructor(init: Partial<Props<Article>>) {
@@ -31,10 +36,11 @@ export default class Article extends Model {
     this.author = init.author!
     this.favorited = init.favorited || false
     this.favoritesCount = init.favoritesCount || 0
+    this.createdAt = init.createdAt || new Date()
   }
 
   async addComment(comment: { body: string, author: User }): Promise<void> {
-    await this.comments.add(comment)
+    await this.comments.add(comment as any)
   }
 
   setSlug(): void {

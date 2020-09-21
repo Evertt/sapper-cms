@@ -1,7 +1,7 @@
 <script context="module">
 	import User from "../../../store/User"
 
-	export async function preload(this: any, { params }: any, { user }: any) {
+	export async function preload(this: any, { params }: any) {
 		const username = params.user.slice(1)
 		const profile = User.query().where("username", "==", username).first()
 

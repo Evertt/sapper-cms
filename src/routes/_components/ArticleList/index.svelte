@@ -3,7 +3,11 @@
 		const articles = Article.query()
 			.limit(10).orderBy("createdAt", "desc")
 
-		await articles
+		// Preload the article and all
+		// the related authors as well.
+		await Promise.all((await articles).map(
+			async article => await article.author
+		))
 
 		return { articles }
 	}
@@ -23,7 +27,9 @@
 
 	const { session, page } = stores()
 
-	export let articles = Article.query().limit(10)
+	export let articles = Article.query()
+		.limit(10).orderBy("createdAt", "desc")
+
 	const articlesCount = 40
 
 	$: {

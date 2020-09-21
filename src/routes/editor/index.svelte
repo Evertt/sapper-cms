@@ -8,7 +8,6 @@
 
 <script>
 	import { stores } from "@sapper/app"
-	import type User from "../../store/User"
 	import Editor from "./_Editor.svelte"
 	import Article from "../../store/Article"
 

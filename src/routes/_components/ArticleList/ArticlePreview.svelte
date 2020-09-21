@@ -4,8 +4,13 @@
   
   export let article: Article
   export let user: User
-  let author: any
 
+  // for proper preloading it's important
+  // to immediately assign this variable.
+  let author = article.author
+
+  // And for live data updates it's of course important
+  // to bind / subscribe this variable to article.author.
   $: author = article.author
 
   async function toggleFavorite() {
@@ -22,11 +27,11 @@
   }
 </script>
 
-{#await author then _}
+{#if $author}
   <div class="article-preview">
     <div class="article-meta">
       <a href='/profile/@{$author.username}'>
-        <img src={$author.image} alt={$author.username} />
+        <img src={$author.image || ""} alt={$author.username || ""} />
       </a>
 
       <div class="info">
@@ -59,4 +64,4 @@
       </ul>
     </a>
   </div>
-{/await}
+{/if}

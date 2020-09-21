@@ -1,28 +1,32 @@
 <script context="module">
-	import { preload } from "./MainView/index.svelte"
+  import Misc from "../../store/Misc"
+	import { preload as subPreload } from "./MainView/index.svelte"
 
-	export { preload }
+	export const preload = async () => {
+    const results = await subPreload()
+    const misc = Misc.find("misc")
+
+    await misc
+
+    return { ...results, misc }
+  }
 </script>
 
 <script>
   import MainView from "./MainView/index.svelte"
   import Tags from "./Tags.svelte"
-  import Misc from "../../store/Misc"
 
   export let p = 1
   export let articles: any
+  export let misc = Misc.find("misc")
 
   let tab: string
   let tag: string|null
-  let tags: string[]|undefined
-  const misc = Misc.find("misc")
 
   function setTags({ detail }: any) {
     tag = detail.tag
     tab = "tag"
   }
-  
-  $: tags = $misc?.tags
 </script>
 
 <svelte:head>
@@ -44,7 +48,7 @@
       <div class="col-md-3">
         <div class="sidebar">
           <p>Popular Tags</p>
-          <Tags {tags} on:select={setTags} />
+          <Tags tags={$misc.tags} on:select={setTags} />
         </div>
       </div>
     </div>

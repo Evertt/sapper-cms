@@ -2,7 +2,6 @@
 	import type User from "../../../store/User"
 	import { goto } from '@sapper/app';
 	import ArticleList from '../../_components/ArticleList/index.svelte';
-	import * as api from 'api.js';
 
 	export let profile: User
 	export let favorites: boolean

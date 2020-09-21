@@ -6,7 +6,14 @@
 		const article = Article.query().where("slug", "==", slug).first()
 
 		try {
-			await article
+			const artcle = await article
+			await artcle.author
+			const cmmnts = await artcle.comments
+
+			await Promise.all(cmmnts.map(
+				async comment => await comment.author
+			))
+
 			return { article }
 		} catch {
 			this.error(404, "Article not found")
@@ -20,20 +27,25 @@
 
 	import ArticleMeta from './_ArticleMeta.svelte';
 	import CommentContainer from './_CommentContainer.svelte';
-	import type { Readable } from "svelte/store";
 
-	export let article = undefined as unknown as Readable<Article>
-	const comments = $article.comments
+	const { session, page } = stores()
+	const { slug } = $page.params
 
-	const { session } = stores()
+	// Just adding a default value in case
+	// SSR wasn't working for some reason.
+	export let article = Article.query()
+		.where("slug", "==", slug).first()
 
+	let comments = $article.comments
+	$: comments = $article.comments
 	$: markup = marked($article.body)
 </script>
 
 <svelte:head>
-	<title>{$article.title}</title>
+	<title>{($article || {}).title}</title>
 </svelte:head>
 
+{#if $article}
 <div class="article-page">
 
 	<div class="banner">
@@ -69,3 +81,4 @@
 		</div>
 	</div>
 </div>
+{/if}

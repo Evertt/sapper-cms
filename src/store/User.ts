@@ -12,11 +12,12 @@ export default class User extends Model {
   public image?: string|null
   public bio?: string|null
   public emailVerified?: boolean
+  public following = false
 
   public createdAt?: Date
   public updatedAt?: Date
 
-  constructor(params: Props<User>) {
+  constructor(params: Partial<Props<User>>) {
     super(params)
     Object.assign(this, params)
   }

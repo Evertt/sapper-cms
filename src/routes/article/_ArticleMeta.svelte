@@ -5,8 +5,8 @@
 
   export let article: Article
   export let user: User|null
-  let author: any
-
+  
+  let author = article.author
   $: author = article.author
   $: canModify = $author && user && $author.username === user.username
 
@@ -16,10 +16,10 @@
   }
 </script>
 
-{#await author then _}
+{#if $author}
   <div class="article-meta">
     <a href="/profile/@{$author.username}">
-      <img src={$author.image} alt={$author.username} />
+      <img src={$author.image || ""} alt={$author.username || ""} />
     </a>
 
     <div class="info">
@@ -41,4 +41,4 @@
       </span>
     {/if}
   </div>
-{/await}
+{/if}

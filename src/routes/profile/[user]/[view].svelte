@@ -13,7 +13,7 @@
 	import { stores } from '@sapper/app';
 	import Profile from './_Profile.svelte';
 
-	export let profile: any, favorites: any[];
+	export let profile: any, favorites: boolean;
 	const { session } = stores();
 </script>
 
@@ -21,4 +21,4 @@
 	<title>{profile.username} • Conduit</title>
 </svelte:head>
 
-<Profile {profile} {favorites} user={$session.user}/>
+<Profile {profile} {favorites} user={$session.user} />
