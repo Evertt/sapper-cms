@@ -14,17 +14,26 @@
       }
 
       const idToken = await fbUser.getIdToken()
-      const user = new User({
-        id: fbUser.uid,
-        token: idToken,
-        name: fbUser.displayName,
-        image: fbUser.photoURL,
-        email: fbUser.email,
-        emailVerified: fbUser.emailVerified,
-        username: (fbUser.displayName?.match(/^\w+/) || [])[0]
-      })
+      let user: User
 
-      await user.updateOrCreate()
+      try {
+        user = await User.find(fbUser.uid)
+        user.token = idToken
+        user.save("update")
+      } catch {
+        user = new User({
+          id: fbUser.uid,
+          token: idToken,
+          displayName: fbUser.displayName,
+          image: fbUser.photoURL,
+          email: fbUser.email,
+          emailVerified: fbUser.emailVerified || false,
+          username: (fbUser.displayName?.match(/^\w+/) || [])[0]
+        })
+
+        await user.save()
+      }
+
       $session.user = user
     })
 

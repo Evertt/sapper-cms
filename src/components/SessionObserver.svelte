@@ -19,6 +19,11 @@
   }
 
   const { session } = stores()
+
+  if (process.browser && $session.user && $session.user.constructor?.name !== "User") {
+    $session.user = new User($session.user)
+  }
+
   let lastSessionValue = jsonify($session)
 
   const saveSession = (newSessionValue: any) => {
@@ -44,10 +49,6 @@
   const saveSessionThrottled = throttle(saveSession, 100, 500, 1000)
 
   $: if (process.browser) {
-    if ($session.user && !$session.user.constructor) {
-      $session.user = new User($session.user)
-    }
-
     saveSessionThrottled($session)
   }
 </script>

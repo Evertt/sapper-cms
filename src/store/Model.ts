@@ -91,10 +91,18 @@ const toPromise = <T>(observable: Observable<T>): Observable<T> & Promise<T> => 
 }
 
 function initModel<ModelType extends typeof Model>(ModelClass: ModelType, doc: Firebase.firestore.QueryDocumentSnapshot): InstanceType<ModelType> {
+  const data = doc.data()
+
+  for (const key in data) {
+    if (data[key] && typeof data[key] === "object" && "toDate" in data[key]) {
+      data[key] = data[key].toDate()
+    }
+  }
+
   return new ModelClass({
     id: doc.id,
     docRef: doc.ref,
-    ...doc.data(),
+    ...data,
   }) as InstanceType<ModelType>
 }
 
@@ -195,15 +203,23 @@ export default class Model {
 
       if (doc.exists && updateOrReplace === "update") {
         const diff = difference(data, doc.data())
+        const dateKeys = [
+          "created", "updated",
+          "createdAt", "updatedAt",
+        ]
+
         Object.keys(diff).forEach(key => {
-          if (diff[key] === undefined) delete diff[key]
+          if (diff[key] === undefined || dateKeys.includes(key)) {
+            delete diff[key]
+          }
         })
-        Object.keys(diff).forEach(key => {
-          if (diff[key] === undefined) delete diff[key]
-        })
+
         if (Object.keys(diff).length) {
-          data.updatedAt = new Date()
-          await this.docRef.update(data)
+          if ("updatedAt" in data) {
+            diff.updatedAt = new Date()
+          }
+
+          await this.docRef.update(diff)
         }
         Object.assign(this, (await this.docRef.get()).data())
       } else {

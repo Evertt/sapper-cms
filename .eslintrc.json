@@ -42,7 +42,8 @@
 		"semi": ["error", "never"],
 		"arrow-parens": ["error", "as-needed"],
 		"lines-between-class-members": "off",
-		"no-empty-pattern": "off"
+		"no-empty-pattern": "off",
+		"no-restricted-syntax": "off"
 	},
 	"overrides": [
 		{

@@ -7,7 +7,8 @@ import cookieParser from "cookie-parser"
 import session from "express-session"
 import firestoreSessionStore from "firestore-store"
 import csrf from "csurf"
-import { fbAdmin, db } from "./store/firebase"
+import { fbAdmin, db } from "./store"
+import User from "./store/User"
 
 const PORT = process.env.PORT // eslint-disable-line prefer-destructuring
 const mode = process.env.NODE_ENV
@@ -52,17 +53,11 @@ export const createSapperServer = async (): Promise<Express> => {
         const decodedClaims = await fbAdmin.auth()
           .verifySessionCookie(sessionCookie, true)
 
-        req.session!.user_id = decodedClaims.uid
+        const user = await User.find(decodedClaims.uid)
+        req.session!.user_id = user.id
         req.session!.public = {
           ...req.session!.public,
-          user: {
-            name: decodedClaims.name,
-            image: decodedClaims.picture,
-            email: decodedClaims.email,
-            emailVerified: decodedClaims.email_verified,
-            ...req.session!.public?.user,
-            token: req.session!.firebaseIdToken,
-          },
+          user: user.toJSON(),
         }
       } catch {
         delete req.session!.firebaseSessionCookie

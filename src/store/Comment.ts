@@ -5,7 +5,7 @@ export default class Comment extends Model {
   static collection = "comments"
 
   public body: string
-  public createdAt: Date = new Date()
+  public createdAt: Date
 
   @belongsTo(User) public author: ModelQuery<typeof User>
 
