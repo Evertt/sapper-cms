@@ -14,7 +14,7 @@ function isQuery(possibleQuery: any): possibleQuery is Query {
 
 type ExcludeFunctionKeys<T> = Pick<
   T,
-  { [K in keyof T]: T[K] extends (...args: any) => any ? never : K }[keyof T]
+  { [K in keyof T]: T[K] extends CollectionQuery<any> | ((...args: any) => any) ? never : K }[keyof T]
 >
 
 export type Props<T> = {
@@ -213,8 +213,8 @@ export default class Model {
     } else {
       const doc = db.collection((this.constructor as any).collection).doc()
       await doc.set({ ...data, createdAt: new Date(), updated: null })
-      this.id = doc.id
       this.docRef = doc as Firebase.firestore.DocumentReference
+      this.id = doc.id
     }
   }
 
