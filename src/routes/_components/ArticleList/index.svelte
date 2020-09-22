@@ -23,6 +23,14 @@
       {#each $articles as article (article.id)}
         <ArticlePreview {article} user={$session.user}/>
       {/each}
+
+      <div class="pagination">
+        <button on:click={prevPage}>&larr;</button>
+
+        <!-- {#if $articles.length === page_size} -->
+          <button on:click={nextPage}>&rarr;</button>
+        <!-- {/if} -->
+      </div>
     </div>
   {/if}
 {:else}
@@ -41,16 +49,41 @@
 
   const { session } = stores()
 
+  let pageSize = tab === "feed" ? 5 : 10
+
   export let articles = Article.query()
-    .limit(10).orderBy("createdAt", "desc")
+    .limit(pageSize).orderBy("createdAt", "desc")
+
+  let cursor: {
+    startAfter?: Article,
+    endBefore?: Article
+  } = {}
 
   $: {
     // const endpoint = tab === "feed" ? "articles/feed" : "articles"
-    const page_size = tab === "feed" ? 5 : 10
+    pageSize = tab === "feed" ? 5 : 10
 
-    let query = Article.query().limit(page_size)
+    let query = Article.query()
+
     if (tab === "tag") query = query.where("tagList", "array-contains", tag)
     if (tab === "profile") query = query.where(favorites ? "favorited" : "author", "==", user?.docRef)
+    if (cursor.endBefore) query = query.endBefore(cursor.endBefore).limitToLast(pageSize)
+    else if (cursor.startAfter) query = query.startAfter(cursor.startAfter).limit(pageSize)
+    else query = query.limit(pageSize)
+
     articles = query.orderBy("createdAt", "desc")
   }
+
+  const nextPage = () => cursor = { startAfter: $articles.pop() }
+  const prevPage = () => cursor = { endBefore: $articles.shift() }
 </script>
+
+<style>
+  .pagination {
+    @apply block text-center;
+
+    button {
+      @apply mx-4;
+    }
+  }
+</style>

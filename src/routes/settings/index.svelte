@@ -31,9 +31,7 @@
 
 <script>
   import { goto, stores } from "@sapper/app"
-  import ListErrors from "../_components/ListErrors.svelte"
   import SettingsForm from "./_SettingsForm.svelte"
-  import { post } from "utils.js"
   import { fbClient } from "../../store/firebase"
 
   let inProgress: boolean
