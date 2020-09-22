@@ -19,7 +19,7 @@
           <a href="/register">Need an account?</a>
         </p>
 
-        <ListErrors {errors}/>
+        <ListErrors {errors} />
 
         <div bind:this={authContainer} />
       </div>

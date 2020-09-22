@@ -19,5 +19,5 @@
   import SessionObserver from "../components/SessionObserver.svelte"
   import UserObserver from "../components/UserObserver.svelte"
   import Nav from "./_components/Nav.svelte"
-  export let segment: string = ""
+  export let segment = ""
 </script>

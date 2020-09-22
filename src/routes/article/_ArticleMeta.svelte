@@ -1,21 +1,3 @@
-<script>
-  import type Article from "../../store/Article"
-  import type User from "../../store/User"
-  import { goto } from "@sapper/app"
-
-  export let article: Article
-  export let user: User|null
-  
-  let author = article.author
-  $: author = article.author
-  $: canModify = $author && user && $author.username === user.username
-
-  function remove() {
-    article.delete()
-    goto("/")
-  }
-</script>
-
 {#if $author}
   <div class="article-meta">
     <a href="/profile/@{$author.username}">
@@ -42,3 +24,21 @@
     {/if}
   </div>
 {/if}
+
+<script>
+  import type Article from "../../store/Article"
+  import type User from "../../store/User"
+  import { goto } from "@sapper/app"
+
+  export let article: Article
+  export let user: User|null
+  
+  let author = article.author
+  $: author = article.author
+  $: canModify = user && user.id === $author?.id
+
+  function remove() {
+    article.delete()
+    goto("/")
+  }
+</script>

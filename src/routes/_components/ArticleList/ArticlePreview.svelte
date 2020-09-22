@@ -1,32 +1,3 @@
-<script>
-  import type User from "../../../store/User"
-  import type Article from "../../../store/Article"
-  
-  export let article: Article
-  export let user: User
-
-  // for proper preloading it's important
-  // to immediately assign this variable.
-  let author = article.author
-
-  // And for live data updates it's of course important
-  // to bind / subscribe this variable to article.author.
-  $: author = article.author
-
-  async function toggleFavorite() {
-    // optimistic UI
-    if (article.favorited) {
-      article.favoritesCount -= 1
-      article.favorited = false
-    } else {
-      article.favoritesCount += 1
-      article.favorited = true
-    }
-
-    await article.save()
-  }
-</script>
-
 {#if $author}
   <div class="article-preview">
     <div class="article-meta">
@@ -65,3 +36,32 @@
     </a>
   </div>
 {/if}
+
+<script>
+  import type User from "../../../store/User"
+  import type Article from "../../../store/Article"
+  
+  export let article: Article
+  export let user: User
+
+  // for proper preloading it's important
+  // to immediately assign this variable.
+  let author = article.author
+
+  // And for live data updates it's of course important
+  // to bind / subscribe this variable to article.author.
+  $: author = article.author
+
+  async function toggleFavorite() {
+    // optimistic UI
+    if (article.favorited) {
+      article.favoritesCount -= 1
+      article.favorited = false
+    } else {
+      article.favoritesCount += 1
+      article.favorited = true
+    }
+
+    await article.save()
+  }
+</script>

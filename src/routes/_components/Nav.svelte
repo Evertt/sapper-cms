@@ -1,9 +1,3 @@
-<script>
-  import { stores } from "@sapper/app"
-
-  const { page, session } = stores()
-</script>
-
 <nav class="navbar navbar-light">
   <div class="container">
     <a rel="prefetch" class="navbar-brand" href=".">conduit</a>
@@ -47,3 +41,9 @@
     </ul>
   </div>
 </nav>
+
+<script>
+  import { stores } from "@sapper/app"
+
+  const { page, session } = stores()
+</script>
