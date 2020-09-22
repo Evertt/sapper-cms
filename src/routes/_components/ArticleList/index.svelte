@@ -22,8 +22,8 @@
     <div class="article-preview">
       No articles are here... yet.
 
-      <button on:click={generateUsers}>Generate users!</button>
-      <button on:click={generateArticles}>Generate articles!</button>
+      <!-- <button on:click={generateUsers}>Generate users!</button>
+      <button on:click={generateArticles}>Generate articles!</button> -->
     </div>
   {:else}
     <div class="list">
@@ -53,12 +53,12 @@
 {/if}
 
 <script>
-  import faker from "faker"
+  // import faker from "faker"
   import { onDestroy } from "svelte"
   import { stores } from "@sapper/app"
   import { sleep } from "../../../utils"
-  import User from "../../../store/User"
   import { fade } from "svelte/transition"
+  import type User from "../../../store/User"
   import Article from "../../../store/Article"
   import { scrollToTop } from "svelte-scrollto"
   import ArticlePreview from "./ArticlePreview.svelte"
@@ -135,46 +135,46 @@
     page--
   }
 
-  const generateUsers = async () => {
-    for (let i = 0; i < 50; i++) {
-      console.count("user")
+  // const generateUsers = async () => {
+  //   for (let i = 0; i < 50; i++) {
+  //     console.count("user")
 
-      const user = new User({
-        email: faker.internet.email(),
-        displayName: faker.name.firstName(),
-        username: faker.internet.userName(),
-        image: faker.image.avatar(),
-        bio: faker.lorem.paragraphs(),
-        emailVerified: faker.random.number(10) <= 2,
-        following: faker.random.number(10) <= 2,
-        token: faker.random.alphaNumeric(20),
-      })
+  //     const user = new User({
+  //       email: faker.internet.email(),
+  //       displayName: faker.name.firstName(),
+  //       username: faker.internet.userName(),
+  //       image: faker.image.avatar(),
+  //       bio: faker.lorem.paragraphs(),
+  //       emailVerified: faker.random.number(10) <= 2,
+  //       following: faker.random.number(10) <= 2,
+  //       token: faker.random.alphaNumeric(20),
+  //     })
 
-      await user.save()
-    }
-  }
+  //     await user.save()
+  //   }
+  // }
 
-  const generateArticles = async () => {
-    const users = await User.query()
+  // const generateArticles = async () => {
+  //   const users = await User.query()
 
-    for (let i = 0; i < 50; i++) {
-      console.count("article")
-      const title = faker.lorem.sentence()
-      const slug = faker.helpers.slugify(title)
+  //   for (let i = 0; i < 50; i++) {
+  //     console.count("article")
+  //     const title = faker.lorem.sentence()
+  //     const slug = faker.helpers.slugify(title)
 
-      const article = new Article({
-        author: faker.random.arrayElement(users) as any,
-        title, slug,
-        body: faker.lorem.text(),
-        tagList: faker.lorem.words(3).split(" "),
-        description: faker.lorem.sentence(),
-        favorited: faker.random.boolean(),
-        favoritesCount: faker.random.number(10)
-      })
+  //     const article = new Article({
+  //       author: faker.random.arrayElement(users) as any,
+  //       title, slug,
+  //       body: faker.lorem.text(),
+  //       tagList: faker.lorem.words(3).split(" "),
+  //       description: faker.lorem.sentence(),
+  //       favorited: faker.random.boolean(),
+  //       favoritesCount: faker.random.number(10)
+  //     })
 
-      await article.save()
-    }
-  }
+  //     await article.save()
+  //   }
+  // }
 </script>
 
 <style>
