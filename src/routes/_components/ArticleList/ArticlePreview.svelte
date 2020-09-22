@@ -9,7 +9,7 @@
         <a class="author" href='/profile/@{$author.username}'> {$author.username}
         </a>
         <span class="date">
-          {new Date(article.createdAt).toDateString()}
+          {article.createdAt.toDateString()}
         </span>
       </div>
 
@@ -62,6 +62,6 @@
       article.favorited = true
     }
 
-    await article.save()
+    await article.save("update")
   }
 </script>

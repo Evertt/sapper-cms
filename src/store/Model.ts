@@ -253,12 +253,13 @@ export default class Model {
 
         Object.assign(this, (await this.docRef.get()).data())
       } else {
+        data.createdAt = this.createdAt
         data.updatedAt = serverTimestamp()
         await this.docRef.set(data)
       }
     } else {
       const doc = db.collection((this.constructor as any).collection).doc()
-      await doc.set({ ...data, createdAt: serverTimestamp(), updated: null })
+      await doc.set({ ...data, createdAt: serverTimestamp(), updatedAt: null })
       this.docRef = doc as Firebase.firestore.DocumentReference
       this.id = doc.id
     }

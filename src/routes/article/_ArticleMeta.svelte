@@ -7,7 +7,7 @@
     <div class="info">
       <a href="/profile/@{$author.username}" class="author"> {$author.username}</a>
       <span class="date">
-        {new Date(article.createdAt).toDateString()}
+        {article.createdAt.toDateString()}
       </span>
     </div>
 

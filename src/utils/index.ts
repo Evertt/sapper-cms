@@ -45,6 +45,10 @@ function customizer(baseValue: any, value: any): boolean {
     return isEqual(baseValue.sort(), value.sort())
   }
 
+  if (baseValue && baseValue.firestore && value && value.firestore) {
+    return baseValue.path === value.path
+  }
+
   return isEqual(baseValue, value)
 }
 
@@ -62,3 +66,5 @@ export function difference(object: any, base: any): any {
 
   return changes(object, base)
 }
+
+export const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(() => r(), ms))
