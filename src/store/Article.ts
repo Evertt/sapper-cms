@@ -10,7 +10,7 @@ import User from "./User"
 import Comment from "./Comment"
 
 export default class Article extends Model {
-  static collection = "articless"
+  static collection = "articles"
 
   public slug = ""
   public title = ""

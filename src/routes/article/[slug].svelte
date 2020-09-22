@@ -64,6 +64,7 @@
 {/if}
 
 <script>
+  import { onDestroy } from "svelte"
   import { stores } from "@sapper/app"
   import marked from "marked"
 
@@ -78,7 +79,17 @@
   export let article = Article.query()
     .where("slug", "==", slug).first()
 
-  let comments = $article.comments
-  $: comments = $article.comments
   $: markup = marked($article.body)
+
+  let comments = $article.comments
+
+  $: {
+    comments.unsubscribe()
+    comments = $article.comments
+  }
+
+  onDestroy(() => {
+    comments.unsubscribe()
+    article.unsubscribe()
+  })
 </script>

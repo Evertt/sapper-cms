@@ -1,8 +1,11 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable max-len */
 import type Firebase from "firebase-admin"
-import { Observable, firstValueFrom } from "rxjs"
-import { shareReplay, startWith } from "rxjs/operators"
+import { Observable, Subject, firstValueFrom } from "rxjs"
+import {
+  shareReplay, startWith, takeUntil, take,
+} from "rxjs/operators"
+import { writable } from "svelte/store"
 import { db, serverTimestamp } from "./firebase"
 import { difference } from "../utils"
 
@@ -30,8 +33,9 @@ type ProxyWrapper<T, U> = {
     : T[K]
 } & U
 
-export type ModelStore<M extends Model> = Promise<M> & Observable<M>
-export type CollectionStore<M extends Model> = Promise<M[]> & Observable<M[]>
+type Unsubscriber = { unsubscribe(): void }
+export type ModelStore<M extends Model> = Promise<M> & Observable<M> & Unsubscriber
+export type CollectionStore<M extends Model> = Promise<M[]> & Observable<M[]> & Unsubscriber
 
 export type CollectionQuery<ModelType extends typeof Model> = ProxyWrapper<Query, CollectionQueryMethods<ModelType>>
 export type ModelQuery<ModelType extends typeof Model> = ProxyWrapper<Query, ModelQueryMethods<ModelType>>
@@ -83,12 +87,17 @@ function makeProxy<ModelType extends typeof Model>(customMethods: any, cb: any, 
 }
 
 // eslint-disable-next-line no-shadow
-const toPromise = <T>(observable: Observable<T>): Observable<T> & Promise<T> => {
-  const combined = observable as Observable<T> & Promise<T>
+const extend = <T>(observable: Observable<T>, unsubscriber: Subject<void>): Observable<T> & Promise<T> & Unsubscriber => {
+  const combined = observable.pipe(process.browser ? takeUntil(unsubscriber) : take(1))
+    .pipe(shareReplay(1)) as Observable<T> & Promise<T> & Unsubscriber
 
   combined.then = (onFulfilled, onRejected) => firstValueFrom(combined).then(onFulfilled, onRejected)
   combined.catch = onRejected => firstValueFrom(combined).catch(onRejected)
   combined.finally = onFinally => firstValueFrom(combined).finally(onFinally)
+  combined.unsubscribe = () => {
+    unsubscriber.next()
+    unsubscriber.complete()
+  }
 
   return combined
 }
@@ -109,6 +118,16 @@ function initModel<ModelType extends typeof Model>(ModelClass: ModelType, doc: F
   }) as InstanceType<ModelType>
 }
 
+const subscriptionCounts = writable({} as { [key: string]: number })
+
+// This is here for debug purposes.
+// You know, when you get a memory leak.
+//
+// subscriptionCounts.subscribe(counts => {
+//   console.clear()
+//   console.table(counts)
+// })
+
 function docQuery<ModelType extends typeof Model>(
   ModelClass: ModelType,
   query: Query = db.collection(ModelClass.collection) as Query,
@@ -118,19 +137,35 @@ function docQuery<ModelType extends typeof Model>(
     query.limit = () => query
   }
 
-  const myCustomMethods = toPromise((new Observable<InstanceType<ModelType>>(
-    subscriber => query.limit(1).onSnapshot(
-      (snapshot: any) => {
-        if (snapshot.empty === true || snapshot.exists === false) {
-          subscriber.error(new Error(`${ModelClass.name} not found.`))
-        } else {
-          const doc = snapshot.docs ? snapshot.docs[0] : snapshot
-          const model = initModel(ModelClass, doc)
-          subscriber.next(model as any)
-        }
-      },
-    ),
-  )).pipe(shareReplay(1)))
+  const unsubscriber = new Subject<void>()
+
+  const myCustomMethods = extend((new Observable<InstanceType<ModelType>>(
+    subscriber => {
+      const unsubscribe = query.limit(1).onSnapshot(
+        (snapshot: any) => {
+          if (snapshot.empty === true || snapshot.exists === false) {
+            subscriber.error(new Error(`${ModelClass.name} not found.`))
+          } else {
+            const doc = snapshot.docs ? snapshot.docs[0] : snapshot
+            const model = initModel(ModelClass, doc)
+            subscriber.next(model as any)
+          }
+        },
+      )
+
+      const { name } = ModelClass
+      subscriptionCounts.update(counts => ({
+        ...counts, [name]: (counts[name] || 0) + 1,
+      }))
+
+      return () => {
+        unsubscribe()
+        subscriptionCounts.update(counts => ({
+          ...counts, [name]: (counts[name] || 0) - 1,
+        }))
+      }
+    },
+  )), unsubscriber)
 
   // Then we create a proxy
   return makeProxy(myCustomMethods, docQuery, query, ModelClass) as ModelQuery<ModelType>
@@ -140,15 +175,31 @@ function colQuery<ModelType extends typeof Model>(
   ModelClass: ModelType,
   query: Query = db.collection(ModelClass.collection) as Query,
 ): CollectionQuery<ModelType> {
-  const myCustomMethods = toPromise((new Observable<InstanceType<ModelType>[]>(
-    subscriber => query.onSnapshot(
-      snapshot => subscriber.next(
-        snapshot.docs.map(
-          doc => initModel(ModelClass, doc),
+  const unsubscriber = new Subject<void>()
+
+  const myCustomMethods = extend((new Observable<InstanceType<ModelType>[]>(
+    subscriber => {
+      const unsubscribe = query.onSnapshot(
+        snapshot => subscriber.next(
+          snapshot.docs.map(
+            doc => initModel(ModelClass, doc),
+          ),
         ),
-      ),
-    ),
-  )).pipe(shareReplay(1))) as CollectionQueryMethods<ModelType>
+      )
+
+      const { name } = ModelClass
+      subscriptionCounts.update(counts => ({
+        ...counts, [name]: (counts[name] || 0) + 1,
+      }))
+
+      return () => {
+        unsubscribe()
+        subscriptionCounts.update(counts => ({
+          ...counts, [name]: (counts[name] || 0) - 1,
+        }))
+      }
+    },
+  )), unsubscriber) as CollectionQueryMethods<ModelType>
 
   myCustomMethods.first = () => docQuery(ModelClass, query)
   myCustomMethods.add = async model => {

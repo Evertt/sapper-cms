@@ -38,6 +38,7 @@
 {/if}
 
 <script>
+  import { onDestroy } from "svelte"
   import type User from "../../../store/User"
   import type Article from "../../../store/Article"
   
@@ -50,7 +51,12 @@
 
   // And for live data updates it's of course important
   // to bind / subscribe this variable to article.author.
-  $: author = article.author
+  $: {
+    author.unsubscribe()
+    author = article.author
+  }
+
+  onDestroy(author.unsubscribe)
 
   async function toggleFavorite() {
     // optimistic UI

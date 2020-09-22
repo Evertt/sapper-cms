@@ -21,6 +21,9 @@
   {#if $articles.length === 0}
     <div class="article-preview">
       No articles are here... yet.
+
+      <button on:click={generateUsers}>Generate users!</button>
+      <button on:click={generateArticles}>Generate articles!</button>
     </div>
   {:else}
     <div class="list">
@@ -37,11 +40,6 @@
           <button on:click={nextPage}>&rarr;</button>
         {/if}
 
-        {#if !$articles.length}
-          <button on:click={generateUsers}>Generate users!</button>
-          <button on:click={generateArticles}>Generate articles!</button>
-        {/if}
-
         {#if loading}
           <div class="cover"
             in:fade={{ duration: 250 }}
@@ -56,6 +54,7 @@
 
 <script>
   import faker from "faker"
+  import { onDestroy } from "svelte"
   import { stores } from "@sapper/app"
   import { sleep } from "../../../utils"
   import User from "../../../store/User"
@@ -97,6 +96,15 @@
     await sleep(250)
   }
 
+  const unsubscribe = () => {
+    $articles?.forEach(article =>
+      article.author.unsubscribe()
+    )
+    articles?.unsubscribe()
+  }
+
+  onDestroy(unsubscribe)
+
   $: {
     // const endpoint = tab === "feed" ? "articles/feed" : "articles"
     pageSize = tab === "feed" ? 5 : 10
@@ -111,6 +119,7 @@
     else if (cursor.startAfter) newQuery = newQuery.startAfter(cursor.startAfter).limit(pageSize)
     else newQuery = newQuery.limit(pageSize)
 
+    unsubscribe()
     articles = newQuery
   }
 
