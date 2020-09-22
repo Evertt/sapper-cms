@@ -3,7 +3,7 @@
 import type Firebase from "firebase-admin"
 import { Observable, Subject, firstValueFrom } from "rxjs"
 import {
-  shareReplay, startWith, takeUntil, take,
+  startWith, takeUntil, take, refCount, publishReplay,
 } from "rxjs/operators"
 import { writable } from "svelte/store"
 import { db, serverTimestamp } from "./firebase"
@@ -89,7 +89,7 @@ function makeProxy<ModelType extends typeof Model>(customMethods: any, cb: any, 
 // eslint-disable-next-line no-shadow
 const extend = <T>(observable: Observable<T>, unsubscriber: Subject<void>): Observable<T> & Promise<T> & Unsubscriber => {
   const combined = observable.pipe(process.browser ? takeUntil(unsubscriber) : take(1))
-    .pipe(shareReplay(1)) as Observable<T> & Promise<T> & Unsubscriber
+    .pipe(publishReplay(1), refCount()) as Observable<T> & Promise<T> & Unsubscriber
 
   combined.then = (onFulfilled, onRejected) => firstValueFrom(combined).then(onFulfilled, onRejected)
   combined.catch = onRejected => firstValueFrom(combined).catch(onRejected)
@@ -122,7 +122,7 @@ const subscriptionCounts = writable({} as { [key: string]: number })
 
 // This is here for debug purposes.
 // You know, when you get a memory leak.
-//
+
 // subscriptionCounts.subscribe(counts => {
 //   console.clear()
 //   console.table(counts)
@@ -389,7 +389,7 @@ export const belongsTo = <ModelType extends typeof Model>(SubModelClass: ModelTy
       query = db.collection((SubModelClass as any).collection).doc(newValue.id)
     } else {
       // eslint-disable-next-line no-param-reassign
-      newValue = (new Observable()).pipe(startWith(newValue))
+      newValue = (new Observable()).pipe(startWith(newValue), take(1))
     }
 
     metadata.set(this, {

@@ -27,7 +27,7 @@
     </div>
   {:else}
     <div class="list">
-      {#each $articles as article (article.id)}
+      {#each $articles as article}
         <ArticlePreview {article} user={$session.user} />
       {/each}
 
@@ -84,10 +84,10 @@
 
   let page = 1
   $: isFirstPage = page === 1
-  $: isLastPage = $articles.length < pageSize
+  $: isLastPage = $articles?.length < pageSize
 
   let loading = false
-  $: if ($articles.length) loading = false
+  $: if ($articles?.length) loading = false
 
   const startLoadingAnimation = async () => {
     loading = true
@@ -114,7 +114,7 @@
       .orderBy("createdAt", "desc")
 
     if (tab === "tag") newQuery = newQuery.where("tagList", "array-contains", tag)
-    if (tab === "profile") newQuery = newQuery.where(favorites ? "favorited" : "author", "==", user?.docRef)
+    if (tab === "profile") newQuery = newQuery.where(favorites ? "favorited" : "author", "==", favorites ? true : user?.docRef)
     if (cursor.endBefore) newQuery = newQuery.endBefore(cursor.endBefore).limitToLast(pageSize)
     else if (cursor.startAfter) newQuery = newQuery.startAfter(cursor.startAfter).limit(pageSize)
     else newQuery = newQuery.limit(pageSize)

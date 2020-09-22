@@ -1,26 +1,29 @@
 <script context="module">
-  import * as api from "api.js"
+  import User from "../../../store/User"
 
-  export async function preload(this: any, { params }: any, { user }: any) {
+  export async function preload(this: any, { params }: any) {
     const username = params.user.slice(1)
+    const profile = User.query().where("username", "==", username).first()
 
-    const { profile } = await api.get(`profiles/${username}`, user && user.token)
+    await profile
+
     return { profile, favorites: params.view === "favorites" }
   }
 </script>
 
 <svelte:head>
-  <title>{profile.username} • Conduit</title>
+  <title>{$profile.username} • Conduit</title>
 </svelte:head>
 
-<Profile {profile} {favorites} user={$session.user} />
+<Profile profile={$profile} {favorites} user={$session.user} />
 
 <script>
-  import type User from "../../../store/User"
-  import Profile from "./_Profile.svelte"
+  import type { Observable } from "rxjs"
   import { stores } from "@sapper/app"
+  import Profile from "./_Profile.svelte"
 
-  export let profile: User
+  export let profile: Observable<User>
   export let favorites: boolean
+
   const { session } = stores()
 </script>
