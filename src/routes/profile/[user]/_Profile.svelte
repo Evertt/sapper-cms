@@ -7,7 +7,7 @@
 	export let favorites: boolean
 	export let user: User
 
-	$: isUser = user && (profile.username === user.username);
+	$: isUser = user && (profile.id === user.id);
 
 	async function toggleFollowing() {
 		if (!user) return goto('/login');
@@ -25,7 +25,7 @@
 		<div class="container">
 			<div class="row">
 				<div class="col-xs-12 col-md-10 offset-md-1">
-					<img src={profile.image || ""} class="user-img" alt={profile.username || ""} />
+					<img src={profile.image} class="user-img" alt={profile.username} />
 					<h4>{profile.username}</h4>
 					<p>{profile.bio}</p>
 
@@ -62,7 +62,7 @@
 					</ul>
 				</div>
 
-				<ArticleList tab='profile' username={profile.username || ""} {favorites} p={1} />
+				<ArticleList tab='profile' user={profile} {favorites} p={1} />
 			</div>
 		</div>
 	</div>

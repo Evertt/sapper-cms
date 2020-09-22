@@ -3,15 +3,12 @@ import Model, { Props } from "./Model"
 export default class Post extends Model {
   static collection = "posts"
 
-  public slug: string
-  public title: string
-  public html: string
+  public slug = ""
+  public title = ""
+  public html = ""
 
-  constructor(params: Props<Post>) {
-    super(params)
-
-    this.slug = params.slug
-    this.title = params.title
-    this.html = params.html
+  constructor(init: Partial<Props<Post>>) {
+    super(init)
+    Object.assign(this, init)
   }
 }

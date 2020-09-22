@@ -12,30 +12,21 @@ import Comment from "./Comment"
 export default class Article extends Model {
   static collection = "articless"
 
-  public slug: string
-  public title: string
-  public body: string
-  public tagList: string[]
-  public description: string
-  public favorited: boolean
-  public favoritesCount: number
-  public createdAt: Date
+  public slug = ""
+  public title = ""
+  public body = ""
+  public tagList: string[] = []
+  public description = ""
+  public favorited = false
+  public favoritesCount = 0
 
   @belongsTo(User) public author: ModelQuery<typeof User>
   @subcollection(Comment) public comments!: CollectionQuery<typeof Comment>
 
   constructor(init: PropsRequired<Article, "author">) {
     super(init)
-
-    this.slug = init.slug || ""
-    this.title = init.title || ""
-    this.body = init.body || ""
-    this.tagList = init.tagList || []
-    this.description = init.description || ""
+    Object.assign(this, init)
     this.author = init.author
-    this.favorited = init.favorited || false
-    this.favoritesCount = init.favoritesCount || 0
-    this.createdAt = init.createdAt || new Date()
   }
 
   async addComment(comment: { body: string, author: User }): Promise<void> {

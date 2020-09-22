@@ -15,11 +15,12 @@
 
 <script>
 	import { stores } from '@sapper/app'
+	import type User from "../../../store/User"
 	import Article from "../../../store/Article"
 	import ArticlePreview from './ArticlePreview.svelte'
 	import ListPagination from './ListPagination.svelte'
 
-	export let tab: string, username: string|false = false
+	export let tab: string, user: User|undefined = undefined
 	export let favorites: boolean = false
 	export let tag: string|null = null
 	export let p: number
@@ -38,7 +39,7 @@
 
 		let query = Article.query().limit(page_size)
 		if (tab === "tag") query = query.where("tagList", "array-contains", tag)
-		if (tab === 'profile') query = query.where(favorites ? "favorited" : "author", "==", username)
+		if (tab === 'profile') query = query.where(favorites ? "favorited" : "author", "==", user?.docRef)
 		articles = query.orderBy("createdAt", "desc")
 	}
 </script>

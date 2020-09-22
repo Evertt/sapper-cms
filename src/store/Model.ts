@@ -2,8 +2,8 @@
 /* eslint-disable max-len */
 import type Firebase from "firebase-admin"
 import { Observable, firstValueFrom } from "rxjs"
-import { shareReplay } from "rxjs/operators"
-import { db } from "./firebase"
+import { shareReplay, startWith } from "rxjs/operators"
+import { db, serverTimestamp } from "./firebase"
 import { difference } from "../utils"
 
 type Query = Firebase.firestore.Query
@@ -41,6 +41,9 @@ type CollectionQueryMethods<ModelType extends typeof Model> = CollectionStore<In
   first(): ModelQueryMethods<ModelType>
   add(model: ConstructorParameters<ModelType>[0]): Promise<void>
 }
+
+const metadata = new Map()
+const subs: ((t: any, id: string) => void)[] = []
 
 function makeProxy<ModelType extends typeof Model>(customMethods: any, cb: any, query: Query, ModelClass: ModelType) {
   return new Proxy(customMethods, {
@@ -163,11 +166,32 @@ export default class Model {
 
   public docRef?: Firebase.firestore.DocumentReference
   public id?: string
+  public createdAt: Date
+  public updatedAt?: Date
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   constructor(init: any) {
     this.docRef = init.docRef
     this.id = this.docRef?.id || init.id
+
+    if (!init.createdAt) {
+      this.createdAt = new Date()
+    } else if (typeof init.createdAt === "string") {
+      this.createdAt = new Date(init.createdAt)
+    } else if ("toDate" in init.createdAt) {
+      this.createdAt = init.createdAt.toDate()
+    } else {
+      this.createdAt = init.createdAt
+    }
+
+    if (!init.updatedAt) return
+    if (typeof init.updatedAt === "string") {
+      this.updatedAt = new Date(init.updatedAt)
+    } else if ("toDate" in init.updatedAt) {
+      this.updatedAt = init.updatedAt.toDate()
+    } else {
+      this.updatedAt = init.updatedAt
+    }
   }
 
   static query<T extends typeof Model>(this: T): CollectionQuery<T> {
@@ -182,17 +206,29 @@ export default class Model {
 
   async save(updateOrReplace: "update"|"replace" = "replace"): Promise<void> {
     const data: any = { ...this }
+
     delete data.id
     delete data.docRef
+    delete data.createdAt
+    delete data.updatedAt
 
     await Promise.all(Object.keys(data).map(async key => {
       if (data[key] == null) return
 
-      if (Object.getPrototypeOf(data[key].constructor).name === "Model") {
-        if (data[key].docRef == null) await data[key].save()
-        data[key] = data[key].docRef
-      } else if (data[key].constructor?.name === "Observable") {
+      if (data[key].constructor?.name === "Observable") {
         delete data[key]
+      }
+    }))
+
+    const md = metadata.get(this) || {}
+
+    await Promise.all(Object.keys(md).map(async key => {
+      if (key === "id" || !md[key]) return
+
+      if ("then" in md[key]) {
+        const model = await md[key]
+        if (model.docRef == null) await model.save()
+        data[key] = model.docRef
       }
     }))
 
@@ -203,32 +239,26 @@ export default class Model {
 
       if (doc.exists && updateOrReplace === "update") {
         const diff = difference(data, doc.data())
-        const dateKeys = [
-          "created", "updated",
-          "createdAt", "updatedAt",
-        ]
 
         Object.keys(diff).forEach(key => {
-          if (diff[key] === undefined || dateKeys.includes(key)) {
+          if (diff[key] === undefined) {
             delete diff[key]
           }
         })
 
         if (Object.keys(diff).length) {
-          if ("updatedAt" in data) {
-            diff.updatedAt = new Date()
-          }
-
+          diff.updatedAt = serverTimestamp()
           await this.docRef.update(diff)
         }
+
         Object.assign(this, (await this.docRef.get()).data())
       } else {
-        data.updatedAt = new Date()
+        data.updatedAt = serverTimestamp()
         await this.docRef.set(data)
       }
     } else {
       const doc = db.collection((this.constructor as any).collection).doc()
-      await doc.set({ ...data, createdAt: new Date(), updated: null })
+      await doc.set({ ...data, createdAt: serverTimestamp(), updated: null })
       this.docRef = doc as Firebase.firestore.DocumentReference
       this.id = doc.id
     }
@@ -249,9 +279,6 @@ export default class Model {
     return rest as unknown as Props<InstanceType<T>>
   }
 }
-
-const metadata = new Map()
-const subs: ((t: any, id: string) => void)[] = []
 
 const addSubscription = (model: Model, fn: (t: any, id: string) => void): void => {
   if (Object.getOwnPropertyDescriptor(model, "id") === undefined) {
@@ -294,22 +321,28 @@ export const belongsTo = <ModelType extends typeof Model>(SubModelClass: ModelTy
   function get(this: InstanceType<ModelType>) {
     const md = metadata.get(this) || {}
 
-    if (!md.relatedStore) {
-      const query = typeof md.relatedId === "string"
-        ? db.collection((SubModelClass as any).collection).doc(md.relatedId)
-        : md.relatedId
-
-      md.relatedStore = docQuery(SubModelClass as any, query as any)
-    }
-
-    return md.relatedStore
+    return md[key]
   }
 
-  function set(this: InstanceType<ModelType>, newId: any) {
+  function set(this: InstanceType<ModelType>, newValue: any) {
+    let query: any
+
+    // eslint-disable-next-line no-empty
+    if (!newValue) {
+    } else if (typeof newValue === "string") {
+      query = db.collection((SubModelClass as any).collection).doc(newValue)
+    } else if ("docRef" in newValue) {
+      query = newValue.docRef
+    } else if ("id" in newValue) {
+      query = db.collection((SubModelClass as any).collection).doc(newValue.id)
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      newValue = (new Observable()).pipe(startWith(newValue))
+    }
+
     metadata.set(this, {
       ...metadata.get(this),
-      relatedId: newId,
-      relatedStore: null,
+      [key]: query ? docQuery(SubModelClass as any, query as any) : newValue,
     })
   }
 

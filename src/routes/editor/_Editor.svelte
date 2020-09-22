@@ -18,16 +18,16 @@
 	}
 
 	async function publish() {
-		inProgress = true;
+		inProgress = true
 
 		if (article.slug === "") {
 			article.setSlug()
 		}
 
 		await article.updateOrCreate()
-		goto(`/article/${article.slug}`);
+		goto(`/article/${article.slug}`)
 
-		inProgress = false;
+		inProgress = false
 	}
 
 	function enter(node: Element, callback: (node: Element) => void) {

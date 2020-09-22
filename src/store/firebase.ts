@@ -23,3 +23,5 @@ export const fbClient = app as FBClient.app.App
 
 export const db = app.firestore()
 if ((db as any).enablePersistence) (db as any).enablePersistence()
+
+export const { serverTimestamp } = firebase.firestore.FieldValue

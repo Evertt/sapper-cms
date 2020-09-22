@@ -19,14 +19,14 @@
       try {
         user = await User.find(fbUser.uid)
         user.token = idToken
-        user.save("update")
+        await user.save("update")
       } catch {
         user = new User({
           id: fbUser.uid,
           token: idToken,
-          displayName: fbUser.displayName,
-          image: fbUser.photoURL,
-          email: fbUser.email,
+          displayName: fbUser.displayName || "",
+          image: fbUser.photoURL || "",
+          email: fbUser.email || "",
           emailVerified: fbUser.emailVerified || false,
           username: (fbUser.displayName?.match(/^\w+/) || [])[0]
         })

@@ -21,10 +21,10 @@
 
 		<div class="card-footer">
 			<a href='/profile/@{$author.username}' class="comment-author">
-				<img src={$author.image || ""} class="comment-author-img" alt={$author.username || ""} />
+				<img src={$author.image} class="comment-author-img" alt={$author.username} />
 			</a>
 
-			<a href='/profile/@{$author.username}' class="comment-author">{$author.username || ""}</a>
+			<a href='/profile/@{$author.username}' class="comment-author">{$author.username}</a>
 
 			<span class="date-posted">
 				{comment.createdAt.toDateString()}

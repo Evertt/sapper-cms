@@ -13,13 +13,7 @@
 
 	const { session } = stores()
 
-	$: article = new Article({
-		title: '',
-		description: '',
-		body: '',
-		tagList: [],
-		author: $session.user
-	})
+	$: article = new Article({ author: $session.user })
 </script>
 
 <Editor {article} />

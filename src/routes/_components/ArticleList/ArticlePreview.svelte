@@ -31,7 +31,7 @@
   <div class="article-preview">
     <div class="article-meta">
       <a href='/profile/@{$author.username}'>
-        <img src={$author.image || ""} alt={$author.username || ""} />
+        <img src={$author.image} alt={$author.username} />
       </a>
 
       <div class="info">
