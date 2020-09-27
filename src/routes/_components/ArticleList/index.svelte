@@ -41,9 +41,7 @@
         {/if}
 
         {#if loading}
-          <div class="cover"
-            in:fade={{ duration: 250 }}
-            out:fade={{ duration: 250, delay: 250 }} />
+          <div class="cover" transition:fade={{ duration: 250, delay: 50 }} />
         {/if}
       </div>
     </div>
@@ -87,10 +85,10 @@
   $: if ($articles?.length) loading = false
 
   const startLoadingAnimation = async () => {
+    if (!process.browser) return
     loading = true
-    await sleep(150)
-    if (process.browser) scrollToTop({ duration: 250 })
-    await sleep(250)
+    scrollToTop({ duration: 300 })
+    await sleep(100)
   }
 
   const unsubscribe = () => {
@@ -122,13 +120,13 @@
 
   const nextPage = async () => {
     await startLoadingAnimation()
-    cursor = { startAfter: $articles.pop()!.createdAt }
+    cursor = { startAfter: $articles[$articles.length-1].createdAt }
     page++
   }
 
   const prevPage = async () => {
     await startLoadingAnimation()
-    cursor = { endBefore: $articles.shift()!.createdAt }
+    cursor = { endBefore: $articles[0].createdAt }
     page--
   }
 
