@@ -4,11 +4,14 @@ import "weakref-pollyfill"
 import type Firebase from "firebase-admin"
 import { Observable, Subject, firstValueFrom } from "rxjs"
 import {
-  startWith, takeUntil, take, refCount, publishReplay, filter,
+  startWith, takeUntil, take, refCount, publishReplay,
 } from "rxjs/operators"
 import { writable } from "svelte/store"
 import { db, serverTimestamp } from "./firebase"
 import { difference } from "../utils"
+
+const mode = process.env.NODE_ENV
+const dev = mode === "development"
 
 type Query = Firebase.firestore.Query
 
@@ -37,7 +40,7 @@ type ProxyWrapper<T, U> = {
 type Unsubscriber = { unsubscribe(): void }
 export type CollectionStore<M extends Model> = Promise<M[]> & Observable<M[]> & Unsubscriber
 export type ModelStore<M extends Model> = Promise<M> & Observable<M> & Unsubscriber & {
-  id?: string
+  id: string
 }
 
 export type CollectionQuery<ModelType extends typeof Model> = ProxyWrapper<Query, CollectionQueryMethods<ModelType>>
@@ -125,21 +128,23 @@ function initModel<ModelType extends typeof Model>(ModelClass: ModelType, doc: F
 const subscriptionCounts = writable({} as { [key: string]: number })
 export const snapshots = writable({} as any)
 
-// if (process.browser) {
-//   snapshots.subscribe(counts => {
-//     // console.clear()
-//     (window as any).userSnapshotCount = counts.User
-//   })
-// }
+if (dev) {
+  if (process.browser) {
+    snapshots.subscribe(counts => {
+      // console.clear()
+      (window as any).userSnapshotCount = counts.User
+    })
+  }
 
-// This is here for debug purposes.
-// You know, when you get a memory leak.
+  // This is here for debug purposes.
+  // You know, when you get a memory leak.
 
-// subscriptionCounts.subscribe(counts => {
-//   console.log(counts)
-// })
+  subscriptionCounts.subscribe(counts => {
+    console.log(counts)
+  })
+}
 
-const modelStoreCache = new Map()
+const queryStoreCache = new Map()
 
 function docQuery<ModelType extends typeof Model>(
   ModelClass: ModelType,
@@ -204,15 +209,15 @@ function docQuery<ModelType extends typeof Model>(
   // Then we create a proxy
   const proxy = makeProxy(myCustomMethods, docQuery, query, ModelClass) as ModelQuery<ModelType>
 
-  if (typeof queryOrId === "string") {
-    proxy.id = queryOrId
-    const key = `${ModelClass.collection}/${queryOrId}`
-    const cachedModelStore = modelStoreCache.get(key)
-    if (cachedModelStore && cachedModelStore.deref()) {
-      return cachedModelStore.deref()
-    }
-    modelStoreCache.set(key, new WeakRef(proxy))
+  const key = typeof queryOrId === "string"
+    ? `${ModelClass.collection}/${queryOrId}`
+    : JSON.stringify((query.limit(1) as any).jd)
+
+  const cachedQueryStore = queryStoreCache.get(key)
+  if (cachedQueryStore && cachedQueryStore.deref()) {
+    return cachedQueryStore.deref()
   }
+  queryStoreCache.set(key, new WeakRef(proxy))
 
   return proxy
 }
@@ -255,7 +260,16 @@ function colQuery<ModelType extends typeof Model>(
   }
 
   // Then we create a proxy
-  return makeProxy(myCustomMethods, colQuery, query, ModelClass) as CollectionQuery<ModelType>
+  const proxy = makeProxy(myCustomMethods, colQuery, query, ModelClass) as CollectionQuery<ModelType>
+
+  const key = JSON.stringify((query as any).jd)
+  const cachedQueryStore = queryStoreCache.get(key)
+  if (cachedQueryStore && cachedQueryStore.deref()) {
+    return cachedQueryStore.deref()
+  }
+  queryStoreCache.set(key, new WeakRef(proxy))
+
+  return proxy
 }
 
 export default class Model {
