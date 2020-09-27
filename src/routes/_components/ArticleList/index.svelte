@@ -109,7 +109,7 @@
       .orderBy("createdAt", "desc")
 
     if (tab === "tag") newQuery = newQuery.where("tagList", "array-contains", tag)
-    if (tab === "profile") newQuery = newQuery.where(favorites ? "favorited" : "author", "==", favorites ? true : user?.docRef)
+    if (tab === "profile") newQuery = newQuery.where(favorites ? "favorited" : "author", "==", favorites ? true : user!.docRef)
     if (cursor.endBefore) newQuery = newQuery.endBefore(cursor.endBefore).limitToLast(pageSize)
     else if (cursor.startAfter) newQuery = newQuery.startAfter(cursor.startAfter).limit(pageSize)
     else newQuery = newQuery.limit(pageSize)

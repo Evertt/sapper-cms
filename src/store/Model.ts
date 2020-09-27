@@ -211,7 +211,8 @@ function docQuery<ModelType extends typeof Model>(
 
   const key = typeof queryOrId === "string"
     ? `${ModelClass.collection}/${queryOrId}`
-    : JSON.stringify((query.limit(1) as any).jd)
+    // eslint-disable-next-line no-underscore-dangle
+    : JSON.stringify((query.limit(1) as any).jd || (query.limit(1) as any)._queryOptions)
 
   const cachedQueryStore = queryStoreCache.get(key)
   if (cachedQueryStore && cachedQueryStore.deref()) {
@@ -262,7 +263,8 @@ function colQuery<ModelType extends typeof Model>(
   // Then we create a proxy
   const proxy = makeProxy(myCustomMethods, colQuery, query, ModelClass) as CollectionQuery<ModelType>
 
-  const key = JSON.stringify((query as any).jd)
+  // eslint-disable-next-line no-underscore-dangle
+  const key = JSON.stringify((query as any).jd || (query as any)._queryOptions)
   const cachedQueryStore = queryStoreCache.get(key)
   if (cachedQueryStore && cachedQueryStore.deref()) {
     return cachedQueryStore.deref()
