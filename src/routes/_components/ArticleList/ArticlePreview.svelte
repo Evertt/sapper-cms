@@ -52,11 +52,11 @@
   // And for live data updates it's of course important
   // to bind / subscribe this variable to article.author.
   $: if (author.id !== article.author.id) {
-    author?.unsubscribe()
+    author.unsubscribe()
     author = article.author
   }
 
-  onDestroy(() => author?.unsubscribe())
+  onDestroy(author.unsubscribe)
 
   async function toggleFavorite() {
     // optimistic UI

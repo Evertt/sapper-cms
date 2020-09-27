@@ -95,9 +95,8 @@
 
   const unsubscribe = () => {
     $articles?.forEach(article =>
-      article.author?.unsubscribe()
+      article.author.unsubscribe()
     )
-
     articles?.unsubscribe()
   }
 
