@@ -51,7 +51,7 @@
 
   // And for live data updates it's of course important
   // to bind / subscribe this variable to article.author.
-  $: {
+  $: if (author.id !== article.author.id) {
     author.unsubscribe()
     author = article.author
   }

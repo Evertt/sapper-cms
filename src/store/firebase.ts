@@ -22,6 +22,8 @@ export const fbAdmin = app as FBAdmin.app.App
 export const fbClient = app as FBClient.app.App
 
 export const db = app.firestore()
-if ((db as any).enablePersistence) (db as any).enablePersistence()
+if ("enablePersistence" in db) {
+  db.enablePersistence({ synchronizeTabs: true })
+}
 
 export const { serverTimestamp } = firebase.firestore.FieldValue

@@ -54,6 +54,7 @@ function customizer(baseValue: any, value: any): boolean {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function difference(object: any, base: any): any {
+  /* eslint-disable no-param-reassign */
   // eslint-disable-next-line no-shadow
   function changes(object: any, base: any) {
     return transform(object, (result: any, value: any, key: string) => {
@@ -62,6 +63,16 @@ export function difference(object: any, base: any): any {
         result[key] = (isObject(value) && isObject(base[key])) ? changes(value, base[key]) : value
       }
     }, {})
+  }
+
+  if (object.docRef) {
+    object = { ...object }
+    delete object.docRef
+  }
+
+  if (base.docRef) {
+    base = { ...base }
+    delete base.docRef
   }
 
   return changes(object, base)

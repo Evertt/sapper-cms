@@ -1,19 +1,19 @@
 <script context="module">
   const now = new Date()
 
-  export const preload = async () => {
-    const articles = Article.query()
-      .where("createdAt", "<", now)
-      .orderBy("createdAt", "desc")
-      .limit(10)
+  const preloadedArticles = Article.query()
+    .where("createdAt", "<", now)
+    .orderBy("createdAt", "desc")
+    .limit(10)
 
+  export const preload = async () => {
     // Preload the article and all
     // the related authors as well.
-    await Promise.all((await articles).map(
+    await Promise.all((await preloadedArticles).map(
       async article => await article.author
     ))
 
-    return { articles }
+    return { articles: preloadedArticles }
   }
 </script>
 
@@ -72,10 +72,7 @@
 
   let pageSize = tab === "feed" ? 5 : 10
 
-  export let articles = Article.query()
-    .where("createdAt", "<", now)
-    .orderBy("createdAt", "desc")
-    .limit(pageSize)
+  export let articles = preloadedArticles
 
   let cursor: {
     startAfter?: Date,
