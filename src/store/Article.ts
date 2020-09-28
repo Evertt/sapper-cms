@@ -5,7 +5,7 @@ import Model, {
   subcollection,
   ModelQuery,
   CollectionQuery,
-} from "./Model"
+} from "rxfirestorm"
 import User from "./User"
 import Comment from "./Comment"
 

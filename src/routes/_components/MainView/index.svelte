@@ -41,7 +41,7 @@
 </div>
 
 <script>
-  import type { CollectionQuery } from "../../../store/Model"
+  import type { CollectionQuery } from "rxfirestorm"
   import type Article from "../../../store/Article"
   import ArticleList from "../ArticleList/index.svelte"
   import { stores } from "@sapper/app"

@@ -1,4 +1,4 @@
-import Model from "./Model"
+import Model from "rxfirestorm"
 
 export default class Misc extends Model {
   static collection = "misc"

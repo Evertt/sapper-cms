@@ -1,5 +1,6 @@
 import type FBClient from "firebase"
 import type FBAdmin from "firebase-admin"
+import { init as initFireStorm } from "rxfirestorm"
 
 let firebase: typeof FBClient | typeof FBAdmin
 let firebaseConfig: any
@@ -27,3 +28,5 @@ if ("enablePersistence" in db) {
 }
 
 export const { serverTimestamp } = firebase.firestore.FieldValue
+
+initFireStorm(db, serverTimestamp)

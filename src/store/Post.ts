@@ -1,4 +1,4 @@
-import Model, { Props } from "./Model"
+import Model, { Props } from "rxfirestorm"
 
 export default class Post extends Model {
   static collection = "posts"
