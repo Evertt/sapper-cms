@@ -1,10 +1,10 @@
-import Model, { belongsTo, ModelQuery } from "rxfirestorm"
+import Model, { BelongsTo, ModelQuery } from "rxfirestorm"
 import User from "./User"
 
 export default class Comment extends Model {
   static collection = "comments"
 
-  @belongsTo(User)
+  @BelongsTo(User)
   public author: ModelQuery<typeof User>
   public body: string
 

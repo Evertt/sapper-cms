@@ -1,8 +1,8 @@
 import { kebabCase } from "lodash-es"
 import Model, {
   PropsRequired,
-  belongsTo,
-  subcollection,
+  BelongsTo,
+  SubCollection,
   ModelQuery,
   CollectionQuery,
 } from "rxfirestorm"
@@ -20,8 +20,8 @@ export default class Article extends Model {
   public favorited = false
   public favoritesCount = 0
 
-  @belongsTo(User) public author: ModelQuery<typeof User>
-  @subcollection(Comment) public comments!: CollectionQuery<typeof Comment>
+  @BelongsTo(User) public author: ModelQuery<typeof User>
+  @SubCollection(Comment) public comments!: CollectionQuery<typeof Comment>
 
   constructor(init: PropsRequired<Article, "author">) {
     super(init)
