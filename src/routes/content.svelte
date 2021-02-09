@@ -42,6 +42,6 @@
   })
 </script>
 
-<style>
-  @import url("https://cdn.quilljs.com/1.0.0/quill.bubble.css");
+<style global>
+  @import "quill/dist/quill.bubble.css";
 </style>
