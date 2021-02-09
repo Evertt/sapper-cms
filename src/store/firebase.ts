@@ -6,7 +6,7 @@ let firebase: typeof FBClient | typeof FBAdmin
 let firebaseConfig: any
 
 if (process.browser) {
-  firebase = window.firebase
+  firebase = window.firebase as any as typeof FBClient
   firebaseConfig = process.env.FIREBASE_BROWSER_CONFIG
 } else {
   // eslint-disable-next-line

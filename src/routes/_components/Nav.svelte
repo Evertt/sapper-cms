@@ -6,6 +6,10 @@
         <a rel="prefetch" class="nav-link" class:active={$page.path === "/"} href="/">Home</a>
       </li>
 
+      <li class="nav-item">
+        <a rel="prefetch" class="nav-link" class:active={$page.path === "/content"} href="/content">Content</a>
+      </li>
+
       {#if $session.user}
         <li class="nav-item">
           <a rel="prefetch" href="/editor" class="nav-link" class:active={$page.path === "/editor"}>

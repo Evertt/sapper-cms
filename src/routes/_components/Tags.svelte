@@ -1,5 +1,5 @@
 {#if tags}
-  <div className="tag-list">
+  <div class="tag-list">
     {#each tags as tag}
       <a href="." class="tag-default tag-pill" on:click={_ => dispatch("select", { tag })}>
         {tag}

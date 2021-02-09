@@ -22,7 +22,7 @@ module.exports = {
   plugins: [],
   future: {
     purgeLayersByDefault: true,
-    removeDeprecatedGapUtilities: true,
+    standardFontWeights: true,
+    defaultLineHeights: true,
   },
-  experimental: "all",
 }

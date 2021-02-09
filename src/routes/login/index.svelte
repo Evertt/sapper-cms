@@ -31,12 +31,14 @@
   import { goto } from "@sapper/app"
   import ListErrors from "../_components/ListErrors.svelte"
   import { fbClient } from "../../store/firebase"
+  import type FBClient from "firebase"
   import type FirebaseUI from "firebaseui"
 
   let authContainer: Element
   let errors: any = null
 
   const createLoginButtons = async () => {
+    const firebase = window.firebase as any as typeof FBClient
     const firebaseui = window.firebaseui
 
     const ui: FirebaseUI.auth.AuthUI =
@@ -45,8 +47,8 @@
 
     const uiConfig: FirebaseUI.auth.Config = {
       signInOptions: [
-        window.firebase.auth.EmailAuthProvider.PROVIDER_ID,
-        window.firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+        firebase.auth.EmailAuthProvider.PROVIDER_ID,
+        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       ],
       callbacks: {
         signInSuccessWithAuthResult() {
