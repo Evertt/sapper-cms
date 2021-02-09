@@ -49,8 +49,10 @@ export default {
         "process.env.FIREBASE_BROWSER_CONFIG": process.env.FIREBASE_BROWSER_CONFIG,
       }),
       svelte({
-        dev,
-        hydratable: true,
+        compilerOptions: {
+          dev,
+          hydratable: true,
+        },
         emitCss: true,
         preprocess,
       }),
@@ -151,9 +153,11 @@ export default {
         "module.require": "require",
       }),
       svelte({
-        generate: "ssr",
-        dev,
-        hydratable: true,
+        compilerOptions: {
+          generate: "ssr",
+          dev,
+          hydratable: true,
+        },
         preprocess,
       }),
       resolve({
