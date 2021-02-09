@@ -1,10 +1,10 @@
 <script context="module">
-  import Misc from "../store/Misc"
+  import { Page } from "../store"
 
 	export const preload = async () => {
-    const misc = await Misc.find("misc")
+    const page = await Page.find("home")
 
-    return { misc }
+    return { page }
   }
 </script>
 
@@ -21,12 +21,27 @@
   </div>
 
   <div class="container page">
-    <div class="row">
-      <h1>Hello there!</h1>
+    <div id="content">
+      {@html page.body}
     </div>
   </div>
 </div>
 
 <script>
-  
+  import { onMount } from "svelte"
+
+  export let page: Page
+
+  onMount(async () => {
+    if (!process.browser) return;
+    const Quill = (await import("quill")).default
+    const editor = new Quill("#content", {
+      modules: { toolbar: true },
+      theme: "bubble"
+    })
+  })
 </script>
+
+<style>
+  @import url("https://cdn.quilljs.com/1.0.0/quill.bubble.css");
+</style>
