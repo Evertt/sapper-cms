@@ -67,7 +67,7 @@ export const createSapperServer = async (): Promise<Express> => {
       return next()
     },
     sapper.middleware({
-      session: (req: Express.Request) => ({
+      session: (req: any) => ({
         ...req.session!.public,
         csrfToken: req.csrfToken(),
       }),
