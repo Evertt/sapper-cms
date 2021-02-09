@@ -45,30 +45,33 @@ export const createSapperServer = async (): Promise<Express> => {
     csrf(),
     bodyParser.json(),
     async (req, {}, next) => {
+      // eslint-disable-next-line no-shadow
+      const session = req.session as any
+
       try {
         // eslint-disable-next-line no-underscore-dangle
-        const sessionCookie = req.session!.firebaseSessionCookie
+        const sessionCookie = session.firebaseSessionCookie
         if (!sessionCookie) return next()
 
         const decodedClaims = await fbAdmin.auth()
           .verifySessionCookie(sessionCookie, true)
 
         const user = await User.find(decodedClaims.uid)
-        req.session!.user_id = user.id
-        req.session!.public = {
-          ...req.session!.public,
+        session.user_id = user.id
+        session.public = {
+          ...session.public,
           user: user.toJSON(),
         }
       } catch {
-        delete req.session!.firebaseSessionCookie
-        delete req.session!.user_id
+        delete session.firebaseSessionCookie
+        delete session.user_id
       }
 
       return next()
     },
     sapper.middleware({
       session: (req: any) => ({
-        ...req.session!.public,
+        ...req.session.public,
         csrfToken: req.csrfToken(),
       }),
     }),
