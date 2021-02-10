@@ -4,5 +4,5 @@ declare module "utils.js"
 declare module "svelte-scrollto"
 
 declare class WeakRef {
-    constructor(obj: any)
+  constructor(obj: any)
 }

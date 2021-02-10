@@ -21,3 +21,7 @@
   import Nav from "./_components/Nav.svelte"
   export let segment = ""
 </script>
+
+<style global>
+  @import "../styles/global.pcss";
+</style>

@@ -15,7 +15,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"types": [
-			"svelte", "nodejs", "firestore-store"
+			"svelte", "nodejs", "firestore-store", "quill-delta"
 		],
 		"typeRoots": [
 			"types", "node_modules/@types"
