@@ -30,13 +30,14 @@
 
     {#if editor}
       <span class="bg-gray-400 p-4 inline-block w-48 text-center">Draft {draftState}</span>
-      <button class="publish" on:click={commit} disabled={!$page.draft}>Publish</button>
-      <button class="bg-blue-600 text-white p-4 rounded" on:click={cancel}>Cancel</button>
+      <button class="bg-blue-600 text-white p-4 rounded" on:click={cancel}>Close editor</button>
+      <button class="publish" on:click={commit} class:hidden={!$page.draft}>Publish</button>
     {/if}
   </div>
 </div>
 
 <script>
+  import { sleep, throttle as specialThrottle } from "../utils"
   import { debounce, throttle } from "lodash-es"
   import type Quill from "quill"
 
@@ -54,6 +55,7 @@
 
   const startEdit = async () => {
     if (editor) return;
+    let preferCurrentState = false
     const Quill = (await import("quill")).default
     
     editor = new Quill(contentDiv, {
@@ -61,17 +63,22 @@
       theme: "bubble",
     })
 
-    const saveDraft = () => {
+    const saveDraft = async () => {
       if (!editor) return
       setDraftState("saving...")
-      $page.delta = editor.getContents()
+      const $$page = $page
+      $$page.delta = editor.getContents()
+      await $$page.save()
+      await sleep(500)
+      preferCurrentState = false
     }
 
-    const saveDraftDebounced = debounce(saveDraft, 2000)
+    const saveDraftDebounced = specialThrottle(saveDraft, 500, 2000)
 
     editor.on("text-change", (...args) => {
-      if (args[2] !== "user") return;
+      if (args[2] !== "user") return
       setDraftState("waiting to save")
+      preferCurrentState = true
       saveDraftDebounced()
     })
 
@@ -81,8 +88,7 @@
       const newDelta = $page.delta
       const contents = editor.getContents()
       const diff = newDelta ? contents.diff(newDelta) : null
-
-      editor.updateContents(diff)
+      preferCurrentState || editor.updateContents(diff)
 
       setDraftState("saved")
     })
