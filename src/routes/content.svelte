@@ -22,14 +22,14 @@
   </div>
 
   <div class="container page">
-    <Content bind:data={$page.content} {editting} />
+    <Content bind:data={$bla.content} {editting} />
   </div>
 
   <div class="toolbar">
     <button class="edit" class:hidden={editting} on:click={_ => editting = true}>Edit</button>
 
     {#if editting}
-      <button class="cancel" on:click={cancel}>Stop editting</button>
+      <button class="stop" on:click={stop}>Stop editting</button>
       <button class="publish" on:click={commit} class:hidden={!$page.hasUnfinishedDraft}>
         Publish
       </button>
@@ -40,12 +40,27 @@
 
 <script>
   import Content from "../components/Content.svelte"
-  import { throttle } from "lodash-es"
+  import { throttle, isEqual } from "lodash-es"
+  import { writable } from "svelte/store"
   export let page = Page.find("home")
 
   const saving = page.saving
   let saveState = ""
   let editting = false
+  const bla = writable<any>($page)
+  const setBla = bla.set
+
+  bla.set = data => {
+    setBla(data)
+    if (editting) $page.draft = data
+  }
+
+  $: {
+    const yada = editting ? $page.getDraft() : $page
+    if (!isEqual(yada, $bla)) {
+      $bla = yada
+    }
+  }
 
   const setSaveState = throttle((isSaving: boolean) => {
     if (isSaving) saveState = "saving..."
@@ -58,8 +73,8 @@
 
   $: setSaveState($saving)
 
-  const commit = () => {}
-  const cancel = () => editting = false
+  const stop = () => editting = false
+  const commit = () => $page.publishDraft() && stop()
 </script>
 
 <style>
@@ -79,7 +94,7 @@
     }
   }
 
-  button.cancel {
+  button.stop {
     @apply bg-blue-600 text-white p-4;
   }
 

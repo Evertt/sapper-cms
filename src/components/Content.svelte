@@ -5,29 +5,35 @@
 </div>
 
 <script>
-  import { sleep, throttle } from "../utils"
   import type Quill from "quill"
   import Delta from "quill-delta"
+  import { debounce } from "lodash-es"
 
   interface DataModel {
     html: string
-    delta: Delta|null
+    delta: Delta
   }
 
   export let editting = false
   export let data: DataModel = {
-    html: "", delta: null
+    html: "", delta: new Delta()
   }
 
   let contentDiv: HTMLElement
   let editor: Quill|undefined
   let preferCurrentState = false
 
-  const saveDraft = throttle(async () => {
-    data.delta = { ...editor?.getContents() }
-    await sleep(500)
-    preferCurrentState = false
-  }, 500, 1100)
+  const dontPreferCurrentState = debounce(
+    () => preferCurrentState = false, 1000
+  )
+
+  const saveDraft = debounce(async () => {
+    if (editor) {
+      data.html = editor.root.innerHTML
+      data.delta = { ...editor.getContents() }
+    }
+    dontPreferCurrentState()
+  }, 1000)
 
   const initializeEditor = async () => {
     const Quill = (await import("quill")).default
@@ -39,6 +45,7 @@
 
     editor.on("text-change", (...args) => {
       if (args[2] !== "user") return
+      dontPreferCurrentState.cancel()
       preferCurrentState = true
       saveDraft()
     })
@@ -46,18 +53,15 @@
 
   $: if (contentDiv) {
     if (!editting) {
-      if (editor) {
-        data.html = editor.root.innerHTML
-        editor = undefined
-      }
+      editor = undefined
       contentDiv.innerHTML = data.html
     } else if (!editor) {
       initializeEditor()
-    } else {
-      const delta = data.delta
+    } else if (!preferCurrentState) {
+      const newDelta = new Delta(data.delta.ops)
       const contents = editor.getContents() as Delta
-      const diff = delta ? contents.diff(new Delta(delta.ops)) : null
-      preferCurrentState || editor.updateContents(diff)
+      const diff = contents.diff(newDelta)
+      editor.updateContents(diff)
     }
   }
 </script>

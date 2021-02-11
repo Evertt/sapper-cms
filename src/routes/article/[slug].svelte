@@ -8,11 +8,11 @@
     try {
       const artcle = await article
       await artcle.author
-      const cmmnts = await artcle.comments
+      // const cmmnts = await artcle.comments
 
-      await Promise.all(cmmnts.map(
-        async comment => await comment.author
-      ))
+      // await Promise.all(cmmnts.map(
+      //   async comment => await comment.author
+      // ))
 
       return { article }
     } catch {
@@ -54,11 +54,11 @@
 
     <div class="article-actions"></div>
 
-    <div class="row">
+    <!-- <div class="row">
       {#if $comments}
         <CommentContainer article={$article} comments={$comments} user={$session.user} />
       {/if}
-    </div>
+    </div> -->
   </div>
 </div>
 {/if}
@@ -69,7 +69,7 @@
   import marked from "marked"
 
   import ArticleMeta from "./_ArticleMeta.svelte"
-  import CommentContainer from "./_CommentContainer.svelte"
+  // import CommentContainer from "./_CommentContainer.svelte"
 
   const { session, page } = stores()
   const { slug } = $page.params
@@ -81,15 +81,15 @@
 
   $: markup = marked($article.body)
 
-  let comments = $article.comments
+  // let comments = $article.comments
 
-  $: {
-    comments.unsubscribe()
-    comments = $article.comments
-  }
+  // $: {
+  //   comments.unsubscribe()
+  //   comments = $article.comments
+  // }
 
   onDestroy(() => {
-    comments.unsubscribe()
+    // comments.unsubscribe()
     article.unsubscribe()
   })
 </script>

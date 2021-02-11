@@ -12,11 +12,7 @@ class ArchivedPage extends Model {
   }
 }
 
-interface Page {
-  [key: string]: any
-}
-
-class Page extends Model {
+export default class Page extends Model {
   static collection = "pages"
 
   public draft: any|null = null
@@ -34,21 +30,12 @@ class Page extends Model {
     return differenceWith(draft, published, isEqual).length > 0
   }
 
-  getDraftStore(): Writable<any> {
+  getDraft(): any {
     if (!this.draft) {
       const data = this.getStrippedData() as any
       delete data.history
       delete data.draft
       this.draft = data
-    }
-    if ("set" in this.draft) {
-      return this.draft
-    }
-    this.draft = writable(this.draft)
-    const ogSet = this.draft.set
-    this.draft.set = (newData: any) => {
-      ogSet(newData)
-      this.throttledSave()
     }
     return this.draft
   }
@@ -61,13 +48,4 @@ class Page extends Model {
     this.draft = null
     this.save()
   }
-
-  getStrippedData(): Exclude<Props<this>, "id"|"docRef"|"createdAt"|"updatedAt"|"throttledSave"> {
-    const data = super.getStrippedData();
-    (data as any).draft = get((data as any).draft)
-
-    return data
-  }
 }
-
-export default Page

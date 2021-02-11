@@ -21,7 +21,7 @@ export default class Article extends Model {
   public favoritesCount = 0
 
   @BelongsTo(User) public author: ModelQuery<typeof User>
-  @SubCollection(Comment) public comments!: CollectionQuery<typeof Comment>
+  // @SubCollection(Comment) public comments!: CollectionQuery<typeof Comment>
 
   constructor(init: PropsRequired<Article, "author">) {
     super(init)
@@ -30,7 +30,7 @@ export default class Article extends Model {
   }
 
   async addComment(comment: { body: string, author: User }): Promise<void> {
-    await this.comments.add(comment)
+    // await this.comments.add(comment)
   }
 
   setSlug(): void {
