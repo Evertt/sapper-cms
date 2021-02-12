@@ -9,15 +9,12 @@
   import Delta from "quill-delta"
   import { debounce } from "lodash-es"
 
-  interface DataModel {
-    html: string
-    delta: Delta
+  const emptyData = {
+    html: "", delta: { ops: [] }
   }
-
-  export let editting = false
-  export let data: DataModel = {
-    html: "", delta: new Delta()
-  }
+  export let editing = false
+  export let data: typeof emptyData
+  $: data = data || emptyData
 
   let contentDiv: HTMLElement
   let editor: Quill|undefined
@@ -52,7 +49,7 @@
   }
 
   $: if (contentDiv) {
-    if (!editting) {
+    if (!editing) {
       editor = undefined
       contentDiv.innerHTML = data.html
     } else if (!editor) {

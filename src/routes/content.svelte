@@ -21,17 +21,29 @@
     </div>
   </div>
 
-  <div class="container page">
-    <Content bind:data={$bla.content} {editting} />
+  <div class="container page grid grid-cols-2 gap-4">
+    <Content bind:data={$selectedcontent.content} {editing} />
+    <Content bind:data={$selectedcontent.content2} {editing} />
   </div>
 
-  <div class="toolbar">
-    <button class="edit" class:hidden={editting} on:click={_ => editting = true}>Edit</button>
+  <Fab loading={saveState === "saving..."} icon={editing ? faSyncAlt : faEdit } />
 
-    {#if editting}
-      <button class="stop" on:click={stop}>Stop editting</button>
-      <button class="publish" on:click={commit} class:hidden={!$page.hasUnfinishedDraft}>
-        Publish
+  <div class="toolbar">
+    <button class="edit" class:hidden={editing} on:click={_ => editing = true}>
+      Edit page
+      {#if $page.hasUnfinishedDraft}
+        (has unfinished draft)
+      {/if}
+    </button>
+
+    {#if editing}
+      <button class="stopEditing" on:click={stopEditing}>Stop editing</button>
+      <button class="publish" on:click={commit} disabled={!$page.hasUnfinishedDraft}>
+        {#if $page.hasUnfinishedDraft}
+          Publish
+        {:else}
+          (no changes to publish)
+        {/if}
       </button>
       <span class="status">{saveState}</span>
     {/if}
@@ -39,6 +51,8 @@
 </div>
 
 <script>
+  import { faEdit, faSyncAlt } from "@fortawesome/free-solid-svg-icons"
+  import Fab from "../components/FloatingActionButton.svelte"
   import Content from "../components/Content.svelte"
   import { throttle, isEqual } from "lodash-es"
   import { writable } from "svelte/store"
@@ -46,19 +60,19 @@
 
   const saving = page.saving
   let saveState = ""
-  let editting = false
-  const bla = writable<any>($page)
-  const setBla = bla.set
+  let editing = false
+  const selectedcontent = writable<any>($page)
+  const setSelectedContent = selectedcontent.set
 
-  bla.set = data => {
-    setBla(data)
-    if (editting) $page.draft = data
+  selectedcontent.set = data => {
+    setSelectedContent(data)
+    if (editing) $page.draft = data
   }
 
   $: {
-    const yada = editting ? $page.getDraft() : $page
-    if (!isEqual(yada, $bla)) {
-      $bla = yada
+    const newlySelectedContent = editing && $page.draft ? $page.draft : $page.published
+    if (!isEqual(newlySelectedContent, $selectedcontent)) {
+      $selectedcontent = newlySelectedContent
     }
   }
 
@@ -73,8 +87,14 @@
 
   $: setSaveState($saving)
 
-  const stop = () => editting = false
-  const commit = () => $page.publishDraft() && stop()
+  const stopEditing = () => editing = false
+
+  const commit = async () => {
+    page.saving.next(true)
+    await $page.publishDraft()
+    page.saving.next(false)
+    stopEditing()
+  }
 </script>
 
 <style>
@@ -94,7 +114,7 @@
     }
   }
 
-  button.stop {
+  button.stopEditing {
     @apply bg-blue-600 text-white p-4;
   }
 
@@ -104,5 +124,9 @@
 
   span.status {
     @apply p-4 inline-block absolute right-0 h-full text-right;
+  }
+
+  .grid > :global(div) {
+    @apply outline-black;
   }
 </style>
