@@ -8,6 +8,9 @@
   import type Quill from "quill"
   import Delta from "quill-delta"
   import { debounce } from "lodash-es"
+  import { createEventDispatcher } from "svelte"
+
+  const dispatch = createEventDispatcher()
 
   const emptyData = {
     html: "", delta: { ops: [] }
@@ -28,6 +31,7 @@
     if (editor) {
       data.html = editor.root.innerHTML
       data.delta = { ...editor.getContents() }
+      dispatch("change", data)
     }
     dontPreferCurrentState()
   }, 1000)
