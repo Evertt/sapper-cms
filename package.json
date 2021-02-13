@@ -97,6 +97,8 @@
 		"eslint-plugin-import": "^2.22.0",
 		"eslint-plugin-svelte3": "^2.7.3",
 		"faker": "^5.1.0",
+		"framework7": "^6.0.7",
+		"framework7-svelte": "^6.0.7",
 		"js-cookie": "^2.2.1",
 		"kleur": "^4.1.1",
 		"lodash-es": "^4.17.15",

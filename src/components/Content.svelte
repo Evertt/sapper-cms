@@ -1,6 +1,6 @@
 <div bind:this={contentDiv}>
   {#if !process.browser}
-    {@html data.html}
+    {@html $data.html}
   {/if}
 </div>
 
@@ -8,16 +8,14 @@
   import type Quill from "quill"
   import Delta from "quill-delta"
   import { debounce } from "lodash-es"
-  import { createEventDispatcher } from "svelte"
-
-  const dispatch = createEventDispatcher()
+  import type { Writable } from "svelte/store"
 
   const emptyData = {
     html: "", delta: { ops: [] }
   }
   export let editing = false
-  export let data: typeof emptyData
-  $: data = data || emptyData
+  export let data: Writable<typeof emptyData>
+  $: $data = $data || emptyData
 
   let contentDiv: HTMLElement
   let editor: Quill|undefined
@@ -29,9 +27,8 @@
 
   const saveDraft = debounce(async () => {
     if (editor) {
-      data.html = editor.root.innerHTML
-      data.delta = { ...editor.getContents() }
-      dispatch("change", data)
+      $data.html = editor.root.innerHTML
+      $data.delta = { ...editor.getContents() }
     }
     dontPreferCurrentState()
   }, 1000)
@@ -55,11 +52,11 @@
   $: if (contentDiv) {
     if (!editing) {
       editor = undefined
-      contentDiv.innerHTML = data.html
+      contentDiv.innerHTML = $data.html
     } else if (!editor) {
       initializeEditor()
     } else if (!preferCurrentState) {
-      const newDelta = new Delta(data.delta.ops)
+      const newDelta = new Delta($data.delta.ops)
       const contents = editor.getContents() as Delta
       const diff = contents.diff(newDelta)
       editor.updateContents(diff)

@@ -11,20 +11,12 @@
   }
 </script>
 
-<slot page={$selectedContent} {editing} {change} />
+<slot page={selectedContentProxy} {editing} />
 
-<Fab loading={saveState === "saving..."} icon={editing ? faSyncAlt : faEdit } />
+<Fab on:click={_ => editing = !editing} {loading} {icon} />
 
 <div class="toolbar">
-  <button class="edit" class:hidden={editing} on:click={_ => editing = true}>
-    Edit page
-    {#if $page.hasUnfinishedDraft}
-      (has unfinished draft)
-    {/if}
-  </button>
-
   {#if editing}
-    <button class="stopEditing" on:click={stopEditing}>Stop editing</button>
     <button class="publish" on:click={commit} disabled={!$page.hasUnfinishedDraft}>
       {#if $page.hasUnfinishedDraft}
         Publish
@@ -37,26 +29,19 @@
 </div>
 
 <script>
-  import { faEdit, faSyncAlt } from "@fortawesome/free-solid-svg-icons"
+  import { faEdit, faSyncAlt, faTimes } from "@fortawesome/free-solid-svg-icons"
   import Fab from "../components/FloatingActionButton.svelte"
   import { throttle, isEqual } from "lodash-es"
-  import { writable } from "svelte/store"
+  import { writable, get } from "svelte/store"
+  import type { Writable } from "svelte/store"
   import type { ModelQuery } from "rxfirestorm/dist/ModelQuery"
   export let page: ModelQuery<typeof Page>
-
-  const changeMethod = (key: string) => (event: CustomEvent) => {
-    $selectedContent[key] = event.detail
-  }
-
-  const change: any = new Proxy(changeMethod, {
-    get(target, key: string) {
-      return target(key)
-    }
-  })
 
   const saving = page.saving
   let saveState = ""
   let editing = false
+  let icon = faEdit
+  let loading = false
   const selectedContent = writable<any>($page)
   const setSelectedContent = selectedContent.set
 
@@ -65,9 +50,28 @@
     if (editing) $page.draft = data
   }
 
+  const selectedContentProxy: { [key: string]: Writable<any> } = new Proxy({}, {
+    get(_, prop) {
+      const store = writable<any>($selectedContent[prop])
+      const ogSet = store.set
+
+      store.set = data => {
+        ogSet(data)
+        $selectedContent[prop] = data
+      }
+
+      selectedContent.subscribe(newData => {
+        if (!isEqual(newData[prop], get(store))) {
+          store.set(newData[prop])
+        }
+      })
+
+      return store
+    }
+  })
+
   $: {
-    if (editing && !$page.draft) $page.draft = $page.published
-    const newlySelectedContent = editing ? $page.draft : $page.published
+    const newlySelectedContent = !editing ? $page.published : $page.draft || $page.published
     if (!isEqual(newlySelectedContent, $selectedContent)) {
       $selectedContent = newlySelectedContent
     }
@@ -80,9 +84,18 @@
         .match(/^[\d:]+( [ap]m)?/i)![0]
       saveState = `last saved at ${time}`
     }
-  }, 400)
+  }, 750)
 
   $: setSaveState($saving)
+
+  $: loading = saveState === "saving..."
+  $: if (loading) {
+    icon = faSyncAlt
+  } else if (editing) {
+    icon = faTimes
+  } else {
+    icon = faEdit
+  }
 
   const stopEditing = () => editing = false
 
@@ -113,10 +126,6 @@
 
   button.stopEditing {
     @apply bg-blue-600 text-white p-4;
-  }
-
-  button.edit {
-    @apply bg-green-600 text-white p-4;
   }
 
   span.status {

@@ -1,12 +1,6 @@
 <script context="module">
-  import { Page } from "../store"
-
-	export const preload = async () => {
-    const page = Page.find("home")
-    await page
-
-    return { page }
-  }
+  import PageComponent, { pagePreload } from "../components/Page.svelte"
+  export const preload = pagePreload("home")
 </script>
 
 <svelte:head>
@@ -21,17 +15,17 @@
     </div>
   </div>
 
-  <PageComponent {page} let:page let:editing let:change>
+  <PageComponent {page} let:page let:editing>
     <div class="container page grid grid-cols-2 gap-4">
-      <Content data={page.content} {editing} on:change={change.content} />
-      <Content data={page.content2} {editing} on:change={change.content2} />
+      <Content data={page.content} {editing} />
+      <Content data={page.content2} {editing} />
     </div>
   </PageComponent>
 </div>
 
 <script>
   import Content from "../components/Content.svelte"
-  import PageComponent from "../components/Page.svelte"
+  import { Page } from "../store"
 
   export let page = Page.find("home")
 </script>
