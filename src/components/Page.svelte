@@ -124,10 +124,6 @@
     }
   }
 
-  button.stopEditing {
-    @apply bg-blue-600 text-white p-4;
-  }
-
   span.status {
     @apply p-4 inline-block absolute right-0 h-full text-right;
   }

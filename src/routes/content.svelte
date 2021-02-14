@@ -20,10 +20,14 @@
       <Content data={page.content} {editing} />
       <Content data={page.content2} {editing} />
     </div>
+    <div class="image">
+      <Image data={page.plaatje} {editing} />
+    </div>
   </PageComponent>
 </div>
 
 <script>
+  import Image from "../components/Image.svelte"
   import Content from "../components/Content.svelte"
   import { Page } from "../store"
 
@@ -39,5 +43,9 @@
     @apply ml-4 pl-4;
     border-left: 5px solid #ddd;
     line-height: 1.4;
+  }
+
+  .image {
+    @apply m-12 h-64 w-56;
   }
 </style>
