@@ -18,7 +18,7 @@
   let button: HTMLElement
   let initialized = false
   let shownIcon = icon
-  let text: string = "hello there..."
+  let text: string // = "hello there..."
 
   const angle = tweened(0, {
     duration: 500,
@@ -80,8 +80,7 @@
 
 <style>
   button {
-    /* @apply text-white px-4 w-auto h-10 bg-red-600 rounded-full cursor-pointer transition ease-in duration-200 shadow-md-dark; */
-    @apply m-4 p-0 h-12
+    @apply fixed ml-4 mb-16 p-0 w-12 h-12 left-0 bottom-0
     bg-red-600 rounded-full
     cursor-pointer transition
     ease-in duration-200 text-white shadow-md-dark;
@@ -102,9 +101,13 @@
     }
 
     span:first-child {
-      @apply w-6 h-6 inline-block mr-1 pt-2 transform;
+      @apply flex transform;
       opacity: var(--opacity);
       line-height: 3rem;
+
+      :global(svg) {
+        @apply w-12;
+      }
     }
 
     span:last-child {

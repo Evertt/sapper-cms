@@ -15,8 +15,8 @@
 
 <Fab on:click={_ => editing = !editing} {loading} {icon} />
 
-<div class="toolbar">
-  {#if editing}
+{#if editing}
+  <div class="toolbar">
     <button class="publish" on:click={commit} disabled={!$page.hasUnfinishedDraft}>
       {#if $page.hasUnfinishedDraft}
         Publish
@@ -25,8 +25,8 @@
       {/if}
     </button>
     <span class="status">{saveState}</span>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <script>
   import { faEdit, faSyncAlt, faTimes } from "@fortawesome/free-solid-svg-icons"
