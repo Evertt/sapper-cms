@@ -1,13 +1,13 @@
-<div class="outer" bind:this={mask} use:cssVars={{ width, height }} on:dblclick={toggleEdit}>
+<div class="outer" bind:this={mask} use:cssVars={{ width, height }}>
   <div class="mask">
     <div class="masked-image" bind:this={inner}>
       <img src={$data.src} alt={$data.alt} />
     </div>
   </div>
-  <div class="full-image" bind:this={target} class:hidden={!edit || !editing}>
+  <div class="full-image" bind:this={target} class:hidden={!transforming}>
     <img src={$data.src} alt={$data.alt} />
   </div>
-  {#if editing && edit}
+  {#if transforming}
     <Moveable
       {target}
       origin={false}
@@ -29,6 +29,11 @@
       {onResizeStart}
       {onResize}
     />
+  {/if}
+  {#if editing}
+    <button on:click={_ => transforming = !transforming}>
+      { transforming ? "Preview" : "Transform" }
+    </button>
   {/if}
 </div>
 
@@ -53,6 +58,10 @@
   export let data: Writable<typeof emptyData>
   $: $data = $data || emptyData
 
+  $: if (!editing) {
+    transforming = false
+  }
+
   let innerBounds = {
     top: 0, left: 0,
     width: 0, height: 0,
@@ -61,12 +70,7 @@
   let target: HTMLElement
   let inner: HTMLElement
   let mask: HTMLElement
-  let edit = false
-
-  const toggleEdit = () => {
-    if (!editing) return
-    edit = !edit
-  }
+  let transforming = false
 
   const onDragStart = (e: any) => e.set($data.translate)
   const onDrag = (e: any) => $data.translate = e.beforeTranslate
@@ -110,12 +114,28 @@
 
 <style>
   .outer {
-    @apply relative inline-block bg-center overflow-visible;
+    @apply relative overflow-visible;
+    @apply flex items-center justify-center;
+
     width: var(--width);
     height: var(--height);
 
+    button {
+      @apply p-2 bg-gray-400 rounded hidden z-10;
+    }
+
+    &:hover button {
+      @apply inline-block;
+    }
+
     .mask {
-      @apply w-full h-full overflow-hidden;
+      @apply absolute w-full h-full overflow-hidden;
+
+      clip-path: inset(0);
+
+      .masked-image {
+        z-index: -1;
+      }
     }
     
     .masked-image, .full-image {
@@ -127,10 +147,6 @@
         object-fit: contain;
       }
     }
-  }
-
-  .mask {
-    clip-path: inset(0);
   }
 
   .full-image {

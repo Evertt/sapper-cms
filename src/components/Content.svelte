@@ -7,31 +7,15 @@
 <script>
   import type Quill from "quill"
   import Delta from "quill-delta"
-  import { debounce } from "lodash-es"
   import type { Writable } from "svelte/store"
 
-  const emptyData = {
-    html: "", delta: { ops: [] }
-  }
+  const emptyData = { html: "", delta: { ops: [] } }
   export let editing = false
   export let data: Writable<typeof emptyData>
   $: $data = $data || emptyData
 
   let contentDiv: HTMLElement
   let editor: Quill|undefined
-  let preferCurrentState = false
-
-  const dontPreferCurrentState = debounce(
-    () => preferCurrentState = false, 1000
-  )
-
-  const saveDraft = debounce(async () => {
-    if (editor) {
-      $data.html = editor.root.innerHTML
-      $data.delta = { ...editor.getContents() }
-    }
-    dontPreferCurrentState()
-  }, 1000)
 
   const initializeEditor = async () => {
     const Quill = (await import("quill")).default
@@ -43,9 +27,8 @@
 
     editor.on("text-change", (...args) => {
       if (args[2] !== "user") return
-      dontPreferCurrentState.cancel()
-      preferCurrentState = true
-      saveDraft()
+      $data.html = editor!.root.innerHTML
+      $data.delta = { ...editor!.getContents() }
     })
   }
 
@@ -55,7 +38,7 @@
       contentDiv.innerHTML = $data.html
     } else if (!editor) {
       initializeEditor()
-    } else if (!preferCurrentState) {
+    } else {
       const newDelta = new Delta($data.delta.ops)
       const contents = editor.getContents() as Delta
       const diff = contents.diff(newDelta)

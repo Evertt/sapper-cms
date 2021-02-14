@@ -116,7 +116,7 @@
 		"rollup": "2.29",
 		"rollup-plugin-svelte": "^7.1.0",
 		"rollup-plugin-terser": "^7.0.2",
-		"rxfirestorm": "^0.1.24",
+		"rxfirestorm": "^0.1.25",
 		"rxjs": "^7.0.0-beta.10",
 		"sapper": "^0.29.1",
 		"svelte": "^3.32.2",

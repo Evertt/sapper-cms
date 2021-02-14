@@ -77,7 +77,7 @@
     }
   }
 
-  const setSaveState = throttle((isSaving: boolean) => {
+  const setSaveState = throttle((isSaving: boolean|null) => {
     if (isSaving) saveState = "saving..."
     else if (saveState === "saving...") {
       const time = (new Date).toTimeString()
