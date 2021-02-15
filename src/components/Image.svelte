@@ -52,10 +52,9 @@
     width: "auto",
     height: "auto",
     translate: [0,0],
-    scale: [1,1],
     rotate: 0,
     src: "https://img-fotki.yandex.ru/get/5607/5091629.6b/0_612e6_b9039c0d_M.jpg",
-    alt: ""
+    alt: "Flower"
   }
 
   export let width = "100%"
@@ -89,28 +88,27 @@
     e.dragStart && e.dragStart.set($data.translate)
   }
 
-  const onResize = (e: any) => $data = {
-    ...$data,
-    translate: e.drag.beforeTranslate,
-    width: e.width,
-    height: e.height,
+  const onResize = (e: any) => {
+    $data.translate = e.drag.beforeTranslate
+    $data.width = e.width
+    $data.height = e.height
+    transform($data)
   }
 
-  $: if (inner && target && mask) {
-    const translate = `translate(${$data.translate[0]}px, ${$data.translate[1]}px)`
-    const scale = `scale(${$data.scale[0]}, ${$data.scale[1]})`
-    const rotate = `rotate(${$data.rotate}deg)`
-    const t = target, i = inner
+  const transform = (data: typeof emptyData) => {
+    const translate = `translate(${data.translate[0]}px, ${data.translate[1]}px)`
+    const rotate = `rotate(${data.rotate}deg)`
 
-    t.style.transform = `${translate} ${scale} ${rotate}`
-    i.style.transform = `${translate} ${scale} ${rotate}`
+    target.style.width = `${data.width}px`
+    target.style.height = `${data.height}px`
+    target.style.transform = `${translate} ${rotate}`
 
-    t.style.width = `${$data.width}px`
-    t.style.height = `${$data.height}px`
-
-    i.style.width = `${$data.width}px`
-    i.style.height = `${$data.height}px`
+    inner.style.width = target.style.width
+    inner.style.height = target.style.height
+    inner.style.transform = target.style.transform
   }
+
+  $: inner && target && mask && transform($data)
 
   $: innerBounds = {
     top: mask?.offsetTop,

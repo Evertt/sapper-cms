@@ -13,7 +13,7 @@
 
 <slot page={selectedContentProxy} {editing} />
 
-{#if 1 || $session.user}
+{#if $session.user}
   <Fab on:click={_ => editing = !editing} {loading} {icon} {text}
     on:mouseenter={_ => hover = true} on:mouseleave={_ => hover = false}
     on:commit={commit} canCommit={$page.hasUnfinishedDraft}
