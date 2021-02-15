@@ -13,19 +13,11 @@
 
 <slot page={selectedContentProxy} {editing} />
 
-<Fab on:click={_ => editing = !editing} {loading} {icon} />
-
-{#if editing}
-  <div class="toolbar">
-    <button class="publish" on:click={commit} disabled={!$page.hasUnfinishedDraft}>
-      {#if $page.hasUnfinishedDraft}
-        Publish
-      {:else}
-        (no changes to publish)
-      {/if}
-    </button>
-    <span class="status">{saveState}</span>
-  </div>
+{#if $session.user}
+  <Fab on:click={_ => editing = !editing} {loading} {icon} {text}
+    on:mouseenter={_ => hover = true} on:mouseleave={_ => hover = false}
+    on:commit={commit} canCommit={$page.hasUnfinishedDraft}
+  />
 {/if}
 
 <script>
@@ -35,13 +27,18 @@
   import { writable, get } from "svelte/store"
   import type { Writable } from "svelte/store"
   import type { ModelQuery } from "rxfirestorm/dist/ModelQuery"
+  import { stores } from "@sapper/app"
   export let page: ModelQuery<typeof Page>
+
+  const { session } = stores()
 
   const saving = page.saving
   let saveState = ""
   let editing = false
   let icon = faEdit
   let loading = false
+  let text = ""
+  let hover = false
   const selectedContent = writable<any>($page)
   const setSelectedContent = selectedContent.set
 
@@ -97,6 +94,17 @@
     icon = faEdit
   }
 
+  $: if (hover) {
+    const extra = $page.hasUnfinishedDraft ? "" : "(nothing changed)"
+    text = editing ? `click to stop editing ${extra}` : "click to start editing"
+  } else if (editing) {
+    text = saveState
+  } else if ($page.hasUnfinishedDraft) {
+    text = "has unfinished draft"
+  } else {
+    text = ""
+  }
+
   const stopEditing = () => editing = false
 
   const commit = async () => {
@@ -106,25 +114,3 @@
     stopEditing()
   }
 </script>
-
-<style>
-  :global(body) {
-    @apply pb-12;
-  }
-
-  .toolbar {
-    @apply fixed w-full bottom-0 shadow-md-up h-12;
-  }
-
-  button.publish {
-    @apply bg-green-600 text-white p-4;
-
-    &:disabled {
-      @apply bg-gray-600;
-    }
-  }
-
-  span.status {
-    @apply p-4 inline-block absolute right-0 h-full text-right;
-  }
-</style>

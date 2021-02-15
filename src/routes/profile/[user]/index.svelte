@@ -7,7 +7,7 @@
 
     await profile
 
-    return { profile, favorites: params.view === "favorites" }
+    return { profile }
   }
 </script>
 
@@ -15,7 +15,7 @@
   <title>{$profile.username} • Conduit</title>
 </svelte:head>
 
-<Profile profile={$profile} {favorites} user={$session.user} />
+<Profile profile={$profile} user={$session.user} />
 
 <script>
   import type { Observable } from "rxjs"
@@ -23,7 +23,6 @@
   import Profile from "./_Profile.svelte"
 
   export let profile: Observable<User>
-  export let favorites: boolean
 
   const { session } = stores()
 </script>

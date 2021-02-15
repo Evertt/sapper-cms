@@ -1,4 +1,4 @@
-<div bind:this={contentDiv}>
+<div class="ql-container ql-bubble" bind:this={contentDiv}>
   {#if !process.browser}
     {@html $data.html}
   {/if}

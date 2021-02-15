@@ -12,9 +12,9 @@
           <p>{profile.bio}</p>
 
           {#if isUser}
-            <a href="/settings" class="btn btn-sm btn-outline-secondary action-btn">
-              <i class="ion-gear-a"></i> Edit Profile Settings
-            </a>
+            <button on:click={signOut} class="btn btn-sm btn-outline-secondary action-btn">
+              sign out
+            </button>
           {:else}
             <button
               class="btn btn-sm action-btn {profile.following ? "btn-secondary" : "btn-outline-secondary"}"
@@ -28,38 +28,25 @@
       </div>
     </div>
   </div>
-
-  <div class="container">
-    <div class="row">
-      <div class="col-xs-12 col-md-10 offset-md-1">
-        <div class="articles-toggle">
-          <ul class="nav nav-pills outline-active">
-            <li class="nav-item">
-              <a href="/profile/@{profile.username}" class="nav-link {favorites ? '' : 'active'}">My Articles</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link {favorites ? 'active' : ''}" href="/profile/@{profile.username}/favorites">Favorited Articles</a>
-            </li>
-          </ul>
-        </div>
-
-        <ArticleList tab="profile" user={profile} {favorites} />
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
+  import { fbClient } from "../../../store/firebase"
   import type User from "../../../store/User"
   import { goto } from "@sapper/app"
-  import ArticleList from "../../_components/ArticleList/index.svelte"
 
   export let profile: User
-  export let favorites: boolean
   export let user: User
 
   $: isUser = user && (profile.id === user.id)
+
+  const signOut = () => {
+    fbClient.auth().signOut().then(() => {
+      goto("/")
+    }).catch(error => {
+      console.log({ error })
+    })
+  }
 
   async function toggleFollowing() {
     if (!user) return goto("/login")

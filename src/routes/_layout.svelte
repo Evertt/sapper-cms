@@ -20,7 +20,7 @@
   import FetchWrapper from "../components/FetchWrapper.svelte"
   import SessionObserver from "../components/SessionObserver.svelte"
   import UserObserver from "../components/UserObserver.svelte"
-  import Nav from "./_components/Nav.svelte"
+  import Nav from "../components/Nav.svelte"
   import Modal from "svelte-simple-modal"
   export let segment = ""
 </script>

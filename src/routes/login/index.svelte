@@ -1,8 +1,6 @@
 <script context="module">
   export async function preload(this: any, {}, { user }: any) {
-    if (user) {
-      this.redirect(302, `/`);
-    }
+    if (user) this.redirect(302, `/`)
   }
 </script>
 
@@ -15,9 +13,6 @@
     <div class="row">
       <div class="col-md-6 offset-md-3 col-xs-12">
         <h1 class="text-xs-center">Sign In</h1>
-        <p class="text-xs-center">
-          <a href="/register">Need an account?</a>
-        </p>
 
         <ListErrors {errors} />
 
@@ -29,7 +24,7 @@
 
 <script>
   import { goto } from "@sapper/app"
-  import ListErrors from "../_components/ListErrors.svelte"
+  import ListErrors from "../../components/ListErrors.svelte"
   import { fbClient } from "../../store/firebase"
   import type FBClient from "firebase"
   import type FirebaseUI from "firebaseui"

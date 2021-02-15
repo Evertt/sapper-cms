@@ -1,55 +1,52 @@
 <script context="module">
-  import Misc from "../store/Misc"
-	import { preload as subPreload } from "./_components/MainView/index.svelte"
-
-	export const preload = async () => {
-    const results = await subPreload()
-    const misc = Misc.find("misc")
-
-    await misc
-
-    return { ...results, misc }
-  }
+  import { pagePreload } from "../components/Page.svelte"
+  export const preload = pagePreload("home")
 </script>
 
 <svelte:head>
-  <title>Conduit</title>
+  <title>Content</title>
 </svelte:head>
 
-<div class="home-page">
-  <div class="banner">
-    <div class="container">
-      <h1 class="logo-font">conduit</h1>
-      <p>A place to share your knowledge.</p>
-    </div>
-  </div>
-
-  <div class="container page">
-    <div class="row">
-      <MainView {articles} {tag} bind:tab />
-
-      <div class="col-md-3">
-        <div class="sidebar">
-          <p>Popular Tags</p>
-          <Tags tags={$misc.tags} on:select={setTags} />
-        </div>
+<PageComponent {page} let:page let:editing>
+  <div class="home-page">
+    <div class="banner">
+      <div class="container">
+        <h1 class="logo-font">conduit</h1>
+        <p>A place to share your knowledge.</p>
       </div>
     </div>
+
+    <div class="container page grid grid-cols-2 gap-4">
+      <Content data={page.content} {editing} />
+      <Content data={page.content2} {editing} />
+    </div>
+    <div class="image">
+      <Image data={page.plaatje} {editing} />
+    </div>
   </div>
-</div>
+</PageComponent>
 
 <script>
-  import MainView from "./_components/MainView/index.svelte"
-  import Tags from "./_components/Tags.svelte"
+  import { Page } from "../store"
+  import Image from "../components/Image.svelte"
+  import Content from "../components/Content.svelte"
+  import PageComponent from "../components/Page.svelte"
 
-  export let articles: any
-  export let misc = Misc.find("misc")
-
-  let tab: string
-  let tag: string|null
-
-  function setTags({ detail }: any) {
-    tag = detail.tag
-    tab = "tag"
-  }
+  export let page = Page.find("home")
 </script>
+
+<style>
+  .grid > :global(div) {
+    @apply bg-gray-100 px-4 py-2;
+  }
+
+  .grid :global(blockquote) {
+    @apply ml-4 pl-4;
+    border-left: 5px solid #ddd;
+    line-height: 1.4;
+  }
+
+  .image {
+    @apply m-12 h-64 w-56;
+  }
+</style>
