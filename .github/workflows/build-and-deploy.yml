@@ -5,6 +5,7 @@ on:
       - main
       - master
       - real-world-app
+      - cms
   workflow_dispatch: ~
 
 jobs:
