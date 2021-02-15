@@ -89,32 +89,34 @@
     e.dragStart && e.dragStart.set($data.translate)
   }
 
-  const onResize = (e: any) => {
-    $data.translate = e.drag.beforeTranslate
-    $data.width = e.width
-    $data.height = e.height
+  const onResize = (e: any) => $data = {
+    ...$data,
+    translate: e.drag.beforeTranslate,
+    width: e.width,
+    height: e.height,
   }
 
   $: if (inner && target && mask) {
     const translate = `translate(${$data.translate[0]}px, ${$data.translate[1]}px)`
     const scale = `scale(${$data.scale[0]}, ${$data.scale[1]})`
     const rotate = `rotate(${$data.rotate}deg)`
+    const t = target, i = inner
 
-    target.style.transform = `${translate} ${scale} ${rotate}`
-    inner.style.transform = `${translate} ${scale} ${rotate}`
+    t.style.transform = `${translate} ${scale} ${rotate}`
+    i.style.transform = `${translate} ${scale} ${rotate}`
 
-    target.style.width = `${$data.width}px`
-    target.style.height = `${$data.height}px`
+    t.style.width = `${$data.width}px`
+    t.style.height = `${$data.height}px`
 
-    inner.style.width = `${$data.width}px`
-    inner.style.height = `${$data.height}px`
+    i.style.width = `${$data.width}px`
+    i.style.height = `${$data.height}px`
+  }
 
-    innerBounds = {
-      top: mask.offsetTop,
-      left: mask.offsetLeft,
-      width: mask.offsetWidth,
-      height: mask.offsetHeight,
-    }
+  $: innerBounds = {
+    top: mask?.offsetTop,
+    left: mask?.offsetLeft,
+    width: mask?.offsetWidth,
+    height: mask?.offsetHeight,
   }
 </script>
 

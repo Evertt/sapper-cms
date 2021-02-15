@@ -4,7 +4,8 @@
   import { throttle } from "../utils"
   import User from "../store/User"
 
-  const jsonify = ({ ...obj }, depth = 0): any => {
+  const jsonify = (obj: any, depth = 0): any => {
+    obj = { ...obj }
     Object.keys(obj).forEach(key => {
       if (obj[key] === null) return
       if (typeof obj[key] !== "object") return
