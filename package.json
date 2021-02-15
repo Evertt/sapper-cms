@@ -126,6 +126,7 @@
 		"svelte-moveable": "^0.14.0",
 		"svelte-preprocess": "^4.3.0",
 		"svelte-scrollto": "^0.2.0",
+		"svelte-simple-modal": "^0.8.1",
 		"tailwindcss": "^1.9.6",
 		"tslib": "^2.0.1",
 		"types-quill-delta": "^1.0.0",

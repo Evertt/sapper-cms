@@ -8,17 +8,20 @@
 <SessionObserver />
 <UserObserver />
 
-<Nav />
+<Modal>
+  <Nav />
 
-<main>
-  <slot />
-</main>
+  <main>
+    <slot />
+  </main>
+</Modal>
 
 <script>
   import FetchWrapper from "../components/FetchWrapper.svelte"
   import SessionObserver from "../components/SessionObserver.svelte"
   import UserObserver from "../components/UserObserver.svelte"
   import Nav from "./_components/Nav.svelte"
+  import Modal from "svelte-simple-modal"
   export let segment = ""
 </script>
 

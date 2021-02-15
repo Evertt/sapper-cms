@@ -34,13 +34,19 @@
     <button on:click={_ => transforming = !transforming}>
       { transforming ? "Preview" : "Transform" }
     </button>
+
+    <button on:click={_ => open(Modal)}>Replace</button>
   {/if}
 </div>
 
 <script>
   import type { Writable } from "svelte/store"
+  import Modal from "../components/Modal.svelte"
   import Moveable from "svelte-moveable"
   import cssVars from "svelte-css-vars"
+  import { getContext } from "svelte"
+
+  const { open } = getContext("simple-modal")
 
   const emptyData = {
     width: "auto",
@@ -115,13 +121,13 @@
 <style>
   .outer {
     @apply relative overflow-visible;
-    @apply flex items-center justify-center;
+    @apply flex items-center justify-center flex-col;
 
     width: var(--width);
     height: var(--height);
 
     button {
-      @apply p-2 bg-gray-400 rounded hidden z-10;
+      @apply p-2 m-2 bg-gray-400 rounded hidden z-10;
     }
 
     &:hover button {
