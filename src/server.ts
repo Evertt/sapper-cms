@@ -31,20 +31,6 @@ export const createSapperServer = async (): Promise<Express> => {
   }
 
   app.use(
-    session({
-      store: new FirestoreStore({ database: db }),
-      secret: "I should probably have a secret that's not saved in the repo...",
-      saveUninitialized: false,
-      name: "__session",
-      rolling: true,
-      resave: false,
-      proxy: true,
-      cookie: {
-        secure: !dev,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 30 * 6,
-      },
-    }),
     async (req, res, next) => {
       const match = req.url.match(/\/client\/(.+\.(css|js))$/)
       if (!match) return next()
@@ -61,24 +47,33 @@ export const createSapperServer = async (): Promise<Express> => {
         }
       }
 
-      // eslint-disable-next-line guard-for-in
-      for (const key in eTaggedAssets[filename]) {
-        res.setHeader(key, eTaggedAssets[filename][key])
-      }
-
       if (req.headers["if-none-match"] === eTaggedAssets[filename].ETag) {
         res.writeHead(304)
         return res.end()
       }
 
-      next()
+      // eslint-disable-next-line guard-for-in
+      for (const key in eTaggedAssets[filename]) {
+        res.setHeader(key, eTaggedAssets[filename][key])
+      }
 
-      const encoding = res.getHeaders()["content-encoding"]
-      eTaggedAssets[filename]["content-encoding"] = encoding as any
-
-      return res
+      return next()
     },
     shrinkRay(),
+    session({
+      store: new FirestoreStore({ database: db }),
+      secret: "I should probably have a secret that's not saved in the repo...",
+      saveUninitialized: false,
+      name: "__session",
+      rolling: true,
+      resave: false,
+      proxy: true,
+      cookie: {
+        secure: !dev,
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 30 * 6,
+      },
+    }),
     cookieParser(),
     csrf(),
     bodyParser.json(),
