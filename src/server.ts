@@ -1,3 +1,6 @@
+import fs from "fs"
+import path from "path"
+import mime from "mime/lite"
 import * as sapper from "@sapper/server" // eslint-disable-line import/no-unresolved
 import express, { Express } from "express"
 import sirv from "sirv"
@@ -7,8 +10,6 @@ import session from "express-session"
 import firestoreSessionStore from "firestore-store"
 import csrf from "csurf"
 import shrinkRay from "shrink-ray-current"
-import fs from "fs"
-import path from "path"
 import { fbAdmin, db } from "./store"
 import User from "./store/User"
 
@@ -44,7 +45,6 @@ export const createSapperServer = async (): Promise<Express> => {
         maxAge: 60 * 60 * 24 * 30 * 6,
       },
     }),
-    shrinkRay(),
     async (req, res, next) => {
       const match = req.url.match(/\/client\/(.+\.(css|js))$/)
       if (!match) return next()
@@ -54,6 +54,8 @@ export const createSapperServer = async (): Promise<Express> => {
         const dir = dev ? "__sapper__/dev" : "__sapper__/build"
         const stats = fs.statSync(path.resolve(`${dir}/client/${filename}`))
         eTaggedAssets[filename] = {
+          "Content-Length": stats.size as any,
+          "Content-Type": (mime as any).getType(filename) || "",
           "Last-Modified": stats.mtime.toUTCString(),
           ETag: `W/"${stats.size}-${stats.mtime.getTime()}"`,
         }
@@ -64,8 +66,19 @@ export const createSapperServer = async (): Promise<Express> => {
         res.setHeader(key, eTaggedAssets[filename][key])
       }
 
-      return next()
+      if (req.headers["if-none-match"] === eTaggedAssets[filename].ETag) {
+        res.writeHead(304)
+        return res.end()
+      }
+
+      next()
+
+      const encoding = res.getHeaders()["content-encoding"]
+      eTaggedAssets[filename]["content-encoding"] = encoding as any
+
+      return res
     },
+    shrinkRay(),
     cookieParser(),
     csrf(),
     bodyParser.json(),
