@@ -1,4 +1,5 @@
 const sveltePreprocess = require("svelte-preprocess")
+const windicss = require("svelte-windicss-preprocess")
 const postcss = require("./postcss.config")
 
 const createPreprocessors = ({ sourceMap }) => [
@@ -10,7 +11,7 @@ const createPreprocessors = ({ sourceMap }) => [
     },
     postcss,
   }),
-  // You could have more preprocessors, like mdsvex
+  windicss.preprocess(),
 ]
 
 module.exports = {

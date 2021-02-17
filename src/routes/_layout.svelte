@@ -24,7 +24,3 @@
   import Modal from "svelte-simple-modal"
   export let segment = ""
 </script>
-
-<style global>
-  @import "../styles/global.pcss";
-</style>
