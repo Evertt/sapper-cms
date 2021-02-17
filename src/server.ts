@@ -7,6 +7,8 @@ import session from "express-session"
 import firestoreSessionStore from "firestore-store"
 import csrf from "csurf"
 import shrinkRay from "shrink-ray-current"
+import fs from "fs"
+import path from "path"
 import { fbAdmin, db } from "./store"
 import User from "./store/User"
 
@@ -19,6 +21,8 @@ const main = require.main === module || require.main?.filename.match(/__sapper__
 const FirestoreStore = firestoreSessionStore(session)
 
 export const createSapperServer = async (): Promise<Express> => {
+  const eTaggedAssets: Record<string, Record<string, string>> = {}
+
   const app = express()
 
   if (main) {
@@ -41,6 +45,27 @@ export const createSapperServer = async (): Promise<Express> => {
       },
     }),
     shrinkRay(),
+    async (req, res, next) => {
+      const match = req.url.match(/\/client\/(.+\.(css|js))$/)
+      if (!match) return next()
+      const filename = match[1]
+
+      if (!(filename in eTaggedAssets)) {
+        const dir = dev ? "__sapper__/dev" : "__sapper__/build"
+        const stats = fs.statSync(path.resolve(`${dir}/client/${filename}`))
+        eTaggedAssets[filename] = {
+          "Last-Modified": stats.mtime.toUTCString(),
+          ETag: `W/"${stats.size}-${stats.mtime.getTime()}"`,
+        }
+      }
+
+      // eslint-disable-next-line guard-for-in
+      for (const key in eTaggedAssets[filename]) {
+        res.setHeader(key, eTaggedAssets[filename][key])
+      }
+
+      return next()
+    },
     cookieParser(),
     csrf(),
     bodyParser.json(),
