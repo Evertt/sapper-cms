@@ -1,6 +1,6 @@
 <div on:mouseenter={_ => showCommitButton = true} on:mouseleave={_ => showCommitButton = false}>
   {#if canCommit && showCommitButton && shownIcon !== faEdit}
-    <button class="absolute" style="top: -3.5rem;" transition:fade={{ duration: 250 }}
+    <button aria-label="Publish" class="absolute" style="top: -3.5rem;" transition:fade={{ duration: 250 }}
       on:mouseenter={_ => moveTextUp = true} on:mouseleave={_ => moveTextUp = false}
       on:click={_ => dispatch('commit')}
     >
@@ -8,7 +8,7 @@
     </button>
   {/if}
 
-  <button bind:this={button} on:click on:mouseenter on:mouseleave>
+  <button aria-label="Toggle edit mode" bind:this={button} on:click on:mouseenter on:mouseleave>
     <span style="--opacity: {$opacity}; --transform-rotate: {$angle}deg">
       <Fa icon={shownIcon} size="lg" />
     </span>

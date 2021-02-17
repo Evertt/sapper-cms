@@ -5,6 +5,7 @@
 
 <svelte:head>
   <title>Content</title>
+  <meta name="description" content="This is a demonstration of a sort-of inline CMS">
 </svelte:head>
 
 <PageComponent {page} let:page let:editing>

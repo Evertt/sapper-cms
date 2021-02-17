@@ -1,5 +1,4 @@
 import * as sapper from "@sapper/server" // eslint-disable-line import/no-unresolved
-import compression from "compression"
 import express, { Express } from "express"
 import sirv from "sirv"
 import bodyParser from "body-parser"
@@ -7,6 +6,7 @@ import cookieParser from "cookie-parser"
 import session from "express-session"
 import firestoreSessionStore from "firestore-store"
 import csrf from "csurf"
+import shrinkRay from "shrink-ray-current"
 import { fbAdmin, db } from "./store"
 import User from "./store/User"
 
@@ -22,7 +22,7 @@ export const createSapperServer = async (): Promise<Express> => {
   const app = express()
 
   if (main) {
-    app.use(sirv("static", { dev }))
+    app.use(sirv("static", { dev, etag: true }))
   }
 
   app.use(
@@ -40,7 +40,7 @@ export const createSapperServer = async (): Promise<Express> => {
         maxAge: 60 * 60 * 24 * 30 * 6,
       },
     }),
-    compression({ threshold: 0 }),
+    shrinkRay(),
     cookieParser(),
     csrf(),
     bodyParser.json(),
