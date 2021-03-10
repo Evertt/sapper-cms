@@ -1,5 +1,7 @@
 /* eslint-disable no-restricted-globals,@typescript-eslint/no-explicit-any */
-import { timestamp, files, shell } from "@sapper/service-worker"
+import { files, shell, routes } from "@sapper/service-worker"
+
+const timestamp = process.env.SAPPER_TIMESTAMP
 
 const ASSETS = `cache${timestamp}`
 
@@ -43,21 +45,30 @@ self.addEventListener("fetch", <EventType extends FetchEvent>(event: EventType) 
   // ignore dev server requests
   if (url.hostname === self.location.hostname && url.port !== self.location.port) return
 
+  // for pages, you might want to serve a shell `service-worker-index.html` file,
+  // which Sapper has generated for you. It's not right for every
+  // app, but if it's right for yours then uncomment this section
+  if (url.origin === self.origin && routes.find(route => route.pattern.test(url.pathname))) {
+    event.respondWith(
+      caches
+        .open(`routes${timestamp}`)
+        .then(async cache => {
+          const fetchRequest = fetch(event.request)
+          fetchRequest.then(response => {
+            cache.put(event.request, response.clone())
+          })
+          const cachedResponse = await cache.match(event.request)
+          return cachedResponse || fetchRequest
+        }),
+    )
+    return
+  }
+
   // always serve static files and bundler-generated assets from cache
   if (url.host === self.location.host && cached.has(url.pathname)) {
     event.respondWith(caches.match(event.request) as Promise<Response>)
     return
   }
-
-  // for pages, you might want to serve a shell `service-worker-index.html` file,
-  // which Sapper has generated for you. It's not right for every
-  // app, but if it's right for yours then uncomment this section
-  /*
-  if (url.origin === self.origin && routes.find(route => route.pattern.test(url.pathname))) {
-    event.respondWith(caches.match('/service-worker-index.html'));
-    return;
-  }
-  */
 
   if (event.request.cache === "only-if-cached") return
 

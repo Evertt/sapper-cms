@@ -127,6 +127,7 @@ export default {
       replace({
         "process.browser": true,
         "process.env.NODE_ENV": JSON.stringify(mode),
+        "process.env.SAPPER_TIMESTAMP": new Date().getTime(),
       }),
       commonjs({ sourceMap: !!sourcemap }),
       typescript({
