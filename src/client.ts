@@ -1,3 +1,4 @@
+import "./register-service-worker"
 // eslint-disable-next-line import/no-unresolved
 import * as sapper from "@sapper/app"
 
