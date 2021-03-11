@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-restricted-globals,@typescript-eslint/no-explicit-any */
 import { files, shell, routes } from "@sapper/service-worker"
 
@@ -28,17 +29,11 @@ function getTime(response: Response): number {
   return parseInt(response.headers.get(TIME_HEADER) || "0", 10)
 }
 
-async function equalBodies(resp1: Response, resp2: Response): Promise<boolean> {
-  const buf1 = (await resp1.body?.getReader().read())?.value
-  const buf2 = (await resp2.body?.getReader().read())?.value
+const decoder = new TextDecoder()
 
-  if (!buf1 || !buf2) return buf1 === buf2
-
-  const decoder = new TextDecoder()
-  const body1 = decoder.decode(buf1)
-  const body2 = decoder.decode(buf2)
-
-  return body1 === body2
+async function getBody(response: Response): Promise<string> {
+  const body = await response.body?.getReader().read()
+  return decoder.decode(body?.value)
 }
 
 self.addEventListener("install", <EventType extends ExtendableEvent>(event: EventType) => {
@@ -105,12 +100,18 @@ self.addEventListener("fetch", <EventType extends FetchEvent>(event: EventType) 
               const clients = await (self as any as ServiceWorkerGlobalScope).clients.matchAll()
 
               if (clients.length < 2 && diff > 2000) {
-                const buffer = (await secondClone.body?.getReader().read())?.value
-                if (!buffer) return
-                const decoder = new TextDecoder()
-                const body = decoder.decode(buffer)
-                const match = body.match(/(__SAPPER__={[\s\S]+?};)if/)
-                if (match) setTimeout(() => clients[0].postMessage(match[1]), 500)
+                const pattern = /(__SAPPER__={[\s\S]+?};)if/
+                let oldBody = await getBody(clonedCachedResponse)
+                let newBody = await getBody(secondClone)
+                const oldMatch = oldBody.match(pattern)
+                const newMatch = newBody.match(pattern)
+                if (!oldMatch || !newMatch) return
+                oldBody = oldBody.replace(pattern, "")
+                newBody = newBody.replace(pattern, "")
+                if (newBody !== oldBody) clients[0].postMessage("refresh")
+                else if (newMatch[1] !== oldMatch[1]) {
+                  setTimeout(() => clients[0].postMessage(newMatch[1]), 500)
+                }
               }
             }
           })

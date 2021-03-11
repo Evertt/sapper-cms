@@ -56,9 +56,11 @@
   if (process.browser && "serviceWorker" in navigator) {
     navigator.serviceWorker.addEventListener("message", event => {
       if (!event.data.match(/^__SAPPER/)) return
-      if (process.env.NODE_ENV === "development") return window.location.reload()
       eval(event.data)
       $session = (window as any).__SAPPER__.session
+      if (process.env.NODE_ENV === "development") {
+        console.log("refreshed session from sw")
+      }
     })
   }
 </script>

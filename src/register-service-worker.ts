@@ -82,6 +82,10 @@ if ("serviceWorker" in navigator /* && "SyncManager" in window */) {
         () => showRefreshUI(registration),
       )
     })
+
+  navigator.serviceWorker.addEventListener("message", event => {
+    if (event.data === "refresh") window.location.reload()
+  })
 }
 
 export {}
