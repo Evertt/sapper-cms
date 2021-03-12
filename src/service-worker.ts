@@ -15,6 +15,8 @@ declare const self: ServiceWorkerGlobalScope
 const toCache = (shell as string[]).concat(files as string[])
 const cached = new Set(toCache)
 
+// This function clones a response and adds a timestamp to it.
+// Which is useful for checking later how old a cached response is.
 function timedClone(response: Response): Response {
   const xTime = new Date().getTime()
   const newHeaders = new Headers(response.headers)
@@ -27,6 +29,7 @@ function timedClone(response: Response): Response {
   })
 }
 
+// This extracts the timestamp from a cached response.
 function getTime(response: Response): number {
   return parseInt(response.headers.get(TIME_HEADER) || "0", 10)
 }
@@ -45,6 +48,8 @@ self.addEventListener("install", <EventType extends ExtendableEvent>(event: Even
       .then(cache => cache.addAll(toCache))
       .then(async () => {
         const clients = await self.clients.matchAll()
+        // If the user just opened up our web app in a single new tab,
+        // then we can activate the new service worker immediately.
         if (clients.length < 2) self.skipWaiting()
       }),
   )
@@ -64,7 +69,10 @@ self.addEventListener("activate", <EventType extends ExtendableEvent>(event: Eve
 })
 
 self.addEventListener("fetch", <EventType extends FetchEvent>(event: EventType) => {
+  // Only handle GET requests
   if (event.request.method !== "GET" || event.request.headers.has("range")) return
+
+  // Don't handle firestore channels through this service worker
   if (event.request.url.match(/firestore.googleapis.com.+channel/)) return
 
   const url = new URL(event.request.url)
@@ -75,54 +83,92 @@ self.addEventListener("fetch", <EventType extends FetchEvent>(event: EventType) 
   // ignore dev server requests
   if (url.hostname === self.location.hostname && url.port !== self.location.port) return
 
-  // for pages, you might want to serve a shell `service-worker-index.html` file,
-  // which Sapper has generated for you. It's not right for every
-  // app, but if it's right for yours then uncomment this section
+  // This whole block of code is for handling sapper page routes
   if (url.origin === self.origin && routes.find(route => route.pattern.test(url.pathname))) {
     event.respondWith(
       caches
         .open(ASSETS)
         .then(async cache => {
+          // This if-statement helps to fix the browser's refresh button.
+          // If a new service worker is waiting to activate,
+          // and the user refreshes their one open tab,
+          // then the service worker will activate itself.
           if (event.request.mode === "navigate"
             && self.registration.waiting
             && (await self.clients.matchAll()).length < 2
           ) {
-            self.registration.waiting.postMessage("skipWaiting")
+            self.skipWaiting()
             return new Response("", { headers: { Refresh: "0" } })
           }
 
           const cachedResponse = await cache.match(event.request)
-          const clonedCachedResponse = cachedResponse?.clone()
 
+          // If the cached response is less than 1 second old then just return it.
+          // This is done so that the rest of the code doesn't become an infinite loop.
           if (cachedResponse) {
             const diff = new Date().getTime() - getTime(cachedResponse)
             if (diff < 1000) return cachedResponse
           }
 
-          const fetchRequest = fetch(event.request)
-          fetchRequest.then(async response => {
-            const clone = timedClone(response)
-            const secondClone = clone.clone()
-            await cache.put(event.request, clone)
-            if (event.request.mode !== "navigate") return
-            if (clonedCachedResponse) {
-              const diff = getTime(clone) - getTime(clonedCachedResponse)
-              const clients = await self.clients.matchAll()
+          // This clone will be needed in a bit,
+          // to compare it with a freshly fetched response.
+          const clonedCachedResponse = cachedResponse?.clone()
 
-              if (clients.length < 2 && diff > 2000) {
-                const pattern = /(__SAPPER__={[\s\S]+?};)if/
-                let oldBody = await getBody(clonedCachedResponse)
-                let newBody = await getBody(secondClone)
-                const oldMatch = oldBody.match(pattern)
-                const newMatch = newBody.match(pattern)
-                if (!oldMatch || !newMatch) return
-                oldBody = oldBody.replace(pattern, "")
-                newBody = newBody.replace(pattern, "")
-                if (newBody !== oldBody) clients[0].postMessage("refresh")
-                else if (newMatch[1] !== oldMatch[1]) {
-                  setTimeout(() => clients[0].postMessage(newMatch[1]), 500)
-                }
-              }
+          // Start a fetch request, but don't await it.
+          // So it doesn't block the rest of this function.
+          const fetchRequest = fetch(event.request)
+
+          fetchRequest.then(async response => {
+            // Clone the response and add a timestamp to it
+            const clone = timedClone(response)
+
+            // This second clone is needed in a bit,
+            // to compare it with the clone of the cached response.
+            const secondClone = clone.clone()
+
+            // Save the first clone in the cache
+            await cache.put(event.request, clone)
+
+            // Only continue if the user was navigating to a route,
+            // And if we know which specific tab this fetch request came from.
+            const clients = await self.clients.matchAll()
+            if (clients.length > 1 && !event.clientId) return
+            if (event.request.mode !== "navigate") return
+            if (!clonedCachedResponse) return
+
+            const client = event.clientId
+              ? (await self.clients.get(event.clientId))!
+              : clients[0]
+
+            let oldBody = await getBody(clonedCachedResponse)
+            let newBody = await getBody(secondClone)
+
+            // Extract the sapper injection code from both
+            // the cached body and the freshly fetched body.
+            const sapperInjectPattern = /(__SAPPER__={[\s\S]+?};)if/
+            const oldSapperInject = oldBody.match(sapperInjectPattern)
+            const newSapperInject = newBody.match(sapperInjectPattern)
+
+            if (!oldSapperInject || !newSapperInject) return
+
+            // Delete the sapper injection code from both bodies.
+            oldBody = oldBody.replace(sapperInjectPattern, "")
+            newBody = newBody.replace(sapperInjectPattern, "")
+
+            // If there was any change to the rest of the html...
+            if (newBody !== oldBody) {
+              // Then tell the client to refresh the page.
+              // Which will then get the freshly cached response
+              // that's less than 1 second old. You know,
+              // The code that you saw a bit higher up.
+              client.postMessage("refresh")
+
+              // Otherwise, if the sapper injection code was different in the new response,
+              // which is often just the csrf token, then just send that new code to the client.
+            } else if (newSapperInject[1] !== oldSapperInject[1]) {
+              // I'm doing this with a little delay, because I'm handling this message
+              // in a svelte component. So I need to give sapper some time to boot up.
+              setTimeout(() => client.postMessage(newSapperInject[1]), 500)
             }
           })
 
