@@ -1,10 +1,10 @@
-<div class="outer" bind:this={mask} use:cssVars={{ width, height }}>
+<div class="outer" bind:this={mask} style="--width:{width};--height:{height}">
   <div class="mask">
-    <div class="masked-image" bind:this={inner}>
+    <div class="masked-image" {style}>
       <img src={$data.src} alt={$data.alt} />
     </div>
   </div>
-  <div class="full-image" bind:this={target} class:hidden={!transforming}>
+  <div class="full-image" bind:this={target} class:hidden={!transforming} {style}>
     <img src={$data.src} alt={$data.alt} />
   </div>
   {#if transforming}
@@ -43,7 +43,6 @@
   import type { Writable } from "svelte/store"
   import Modal from "../components/Modal.svelte"
   import Moveable from "svelte-moveable"
-  import cssVars from "svelte-css-vars"
   import { getContext } from "svelte"
 
   const { open } = getContext("simple-modal")
@@ -61,21 +60,12 @@
   export let height = "100%"
   export let editing = false
   export let data: Writable<typeof emptyData>
-  $: $data = $data || emptyData
-
-  $: if (!editing) {
-    transforming = false
-  }
-
-  let innerBounds = {
-    top: 0, left: 0,
-    width: 0, height: 0,
-  }
+  $data = $data || emptyData
 
   let target: HTMLElement
-  let inner: HTMLElement
   let mask: HTMLElement
   let transforming = false
+  $: if (!editing) transforming = false
 
   const onDragStart = (e: any) => e.set($data.translate)
   const onDrag = (e: any) => $data.translate = e.beforeTranslate
@@ -92,29 +82,17 @@
     $data.translate = e.drag.beforeTranslate
     $data.width = e.width
     $data.height = e.height
-    transform($data)
   }
 
-  const transform = (data: typeof emptyData) => {
-    const translate = `translate(${data.translate[0]}px, ${data.translate[1]}px)`
-    const rotate = `rotate(${data.rotate}deg)`
-
-    target.style.width = `${data.width}px`
-    target.style.height = `${data.height}px`
-    target.style.transform = `${translate} ${rotate}`
-
-    inner.style.width = target.style.width
-    inner.style.height = target.style.height
-    inner.style.transform = target.style.transform
-  }
-
-  $: inner && target && mask && transform($data)
+  $: translate = `translate(${$data.translate[0]}px, ${$data.translate[1]}px)`
+  $: rotate = `rotate(${$data.rotate}deg)`
+  $: style = `width:${$data.width}px;height:${$data.height}px;transform:${translate} ${rotate};`
 
   $: innerBounds = {
-    top: mask?.offsetTop,
-    left: mask?.offsetLeft,
-    width: mask?.offsetWidth,
-    height: mask?.offsetHeight,
+    top: mask?.offsetTop || 0,
+    left: mask?.offsetLeft || 0,
+    width: mask?.offsetWidth || 0,
+    height: mask?.offsetHeight || 0,
   }
 </script>
 
