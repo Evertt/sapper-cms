@@ -54,11 +54,11 @@
 		"firebase": "^8.2.6",
 		"firebase-admin": "^9.4.2",
 		"firebase-functions": "^3.13.2",
-		"firebase-tools": "^8.10.0",
+		"firebase-tools": "^9.6.1",
 		"firebaseui": "^4.6.1",
 		"firestore-store": "^2.0.1",
 		"iltorb": "^2.4.5",
-		"marked": "^1.1.1",
+		"marked": "^2.0.1",
 		"node-fetch": "^2.6.1",
 		"shrink-ray-current": "^4.1.2",
 		"sirv": "^1.0.6"
