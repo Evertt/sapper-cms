@@ -19,6 +19,25 @@
 
   const initializeEditor = async () => {
     const Quill = (await import("quill")).default
+
+    const Link = Quill.import("formats/link")
+    const oldCreate = Link.create.bind(Link)
+    Link.create = (value: string) => {
+      let node: HTMLAnchorElement = oldCreate(value)
+      const href = node.getAttribute("href") as string
+      if(!href.match(/^([a-z]+:)?\/\//i)) {
+        node.removeAttribute("rel")
+        node.removeAttribute("target")
+      }
+      if (href.match(/^[\d ()+-]+$/)) {
+        node.setAttribute("href", `tel:${href}`)
+      }
+      if (href.match(/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/)) {
+        node.setAttribute("href", `mailto:${href}`)
+      }
+      node.addEventListener("click", e => e.preventDefault())
+      return node
+    }
     
     editor = editor || new Quill(contentDiv, {
       modules: { toolbar: true },
@@ -575,7 +594,7 @@
     position: relative;
     white-space: nowrap;
   }
-  .ql-container.ql-bubble:not(.ql-disabled) a::before {
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a::before {
     background-color: #444;
     border-radius: 15px;
     top: -5px;
@@ -588,7 +607,7 @@
     text-decoration: none;
     z-index: 1;
   }
-  .ql-container.ql-bubble:not(.ql-disabled) a::after {
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a::after {
     border-top: 6px solid #444;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
@@ -597,8 +616,8 @@
     height: 0;
     width: 0;
   }
-  .ql-container.ql-bubble:not(.ql-disabled) a::before,
-  .ql-container.ql-bubble:not(.ql-disabled) a::after {
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a::before,
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a::after {
     left: 0;
     margin-left: 50%;
     position: absolute;
@@ -606,8 +625,8 @@
     transition: visibility 0s ease 200ms;
     visibility: hidden;
   }
-  .ql-container.ql-bubble:not(.ql-disabled) a:hover::before,
-  .ql-container.ql-bubble:not(.ql-disabled) a:hover::after {
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a:hover::before,
+  .ql-container.ql-bubble:not(.ql-disabled) .ql-editor a:hover::after {
     visibility: visible;
   }
 </style>
