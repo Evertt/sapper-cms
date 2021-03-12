@@ -3,10 +3,12 @@ let refreshing: boolean
 type SWInstalledEventListener = (registration: ServiceWorkerRegistration) => void
 
 let swInstalledListener: SWInstalledEventListener = registration => {
-  // eslint-disable-next-line no-alert
-  if (registration.waiting && window.confirm("New version available! OK to refresh?")) {
-    registration.waiting.postMessage("skipWaiting")
-  }
+  setTimeout(() => {
+    // eslint-disable-next-line no-alert
+    if (registration.waiting && window.confirm("New version available! OK to refresh?")) {
+      registration.waiting.postMessage("skipWaiting")
+    }
+  }, 1000)
 }
 
 const respondToSWInstalled = (registration: ServiceWorkerRegistration) => () => {

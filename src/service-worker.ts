@@ -83,6 +83,14 @@ self.addEventListener("fetch", <EventType extends FetchEvent>(event: EventType) 
       caches
         .open(ASSETS)
         .then(async cache => {
+          if (event.request.mode === "navigate"
+            && self.registration.waiting
+            && (await self.clients.matchAll()).length < 2
+          ) {
+            self.registration.waiting.postMessage("skipWaiting")
+            return new Response("", { headers: { Refresh: "0" } })
+          }
+
           const cachedResponse = await cache.match(event.request)
           const clonedCachedResponse = cachedResponse?.clone()
 
