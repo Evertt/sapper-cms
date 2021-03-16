@@ -9,7 +9,7 @@
   {/if}
 
   <button aria-label="Toggle edit mode" bind:this={button} on:click on:mouseenter on:mouseleave>
-    <span style="--opacity: {$opacity}; --transform-rotate: {$angle}deg">
+    <span style="--opacity: {$opacity}; --tw-rotate: {$angle}deg">
       <Fa icon={shownIcon} size="lg" />
     </span>
   </button>
@@ -105,7 +105,7 @@
   div {
     @apply fixed left-0 bottom-0 ml-8 mb-8
       flex items-center;
-    --bg-opacity: 0.85;
+    --tw-bg-opacity: 0.85 !important;
 
     button {
       @apply p-0 w-12 h-12
@@ -113,14 +113,14 @@
       cursor-pointer transition
       ease-in duration-200 text-white shadow-md-dark;
       min-width: 3rem;
-      --bg-opacity: 0.85;
+      --tw-bg-opacity: 0.85 !important;
 
       &:hover {
         @apply shadow-lg-dark;
-        --bg-opacity: 0.95;
+        --tw-bg-opacity: 0.95 !important;
 
         & + span {
-          --bg-opacity: 0.95;
+          --tw-bg-opacity: 0.95 !important;
         }
       }
 
@@ -149,8 +149,8 @@
       & + span {
         @apply ml-2 py-2 px-3 rounded shadow cursor-default transition-all ease-in duration-200;
         background-color: white;
-        --bg-opacity: 0.85;
-        opacity: var(--bg-opacity);
+        --tw-bg-opacity: 0.85;
+        opacity: var(--tw-bg-opacity);
 
         &.moveup {
           margin-top: -7rem;

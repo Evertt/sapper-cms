@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <div class="container page grid grid-cols-2 gap-4">
+    <div class="container grid grid-cols-2 gap-4 page">
       <Content data={page.content} {editing} />
       <Content data={page.content2} {editing} />
     </div>

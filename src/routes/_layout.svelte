@@ -16,9 +16,9 @@
   </main>
 
   {#if swReg && swReg.waiting}
-    <div transition:slide class="bg-gray-800 text-gray-200 p-4 fixed bottom-0 right-0 m-4 rounded">
+    <div transition:slide class="fixed bottom-0 right-0 p-4 m-4 text-gray-200 bg-gray-800 rounded">
       A new version is available.
-      <span class="text-yellow-500 underline cursor-pointer mx-1" on:click={skipWaiting}>Refresh</span>
+      <span class="mx-1 text-yellow-500 underline cursor-pointer" on:click={skipWaiting}>Refresh</span>
       <span class="text-yellow-500 underline cursor-pointer" on:click={_ => swReg = undefined}>Cancel</span>
     </div>
   {/if}
