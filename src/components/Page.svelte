@@ -44,7 +44,7 @@
 
   selectedContent.set = data => {
     setSelectedContent(data)
-    if (editing) $page.draft = data
+    if (editing) { $page.draft = data }
   }
 
   const selectedContentProxy: { [key: string]: Writable<any> } = new Proxy({}, {
