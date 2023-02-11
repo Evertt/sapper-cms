@@ -55,7 +55,7 @@
 		"firebase": "^7.20.0",
 		"firebase-admin": "^9.1.1",
 		"firebase-functions": "^3.11.0",
-		"firebase-tools": "^8.10.0",
+		"firebase-tools": "^11.22.0",
 		"firebaseui": "^4.6.1",
 		"firestore-store": "^2.0.1",
 		"node-fetch": "^2.6.1",
